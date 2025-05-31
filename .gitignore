@@ -1,4 +1,2 @@
-/bot/api_storage/*
-/bot/server_configurations/*
 *.pyc
 /.idea
