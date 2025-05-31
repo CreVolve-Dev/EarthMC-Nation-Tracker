@@ -1,0 +1,117 @@
+
+![Logo](https://i.imgur.com/0ih5Uv0.png)
+
+EMC Nation Tracker (ENT) is a disnake bot focused around making it easier for EarthMC players to track what happens within their nations. It aims to better integrate EarthMC with Discord by showing things such as citizens joining and leaving your nation, who is online, and keeping track of who in your Discord is verified as a citizen.  
+## Features
+
+- See current relationships with other nations with /information relations
+![information](https://i.imgur.com/uisBvzW.gif)
+- Get notified on when people leave and join your nation in a dedicated notifications channel
+![notification](https://i.imgur.com/RNzrVak.png)
+- Ensure the integrity of your citizens by verifying them on your Discord automatically
+![verify](https://i.imgur.com/I5I1kyR.gif)
+- See who is online at any time by having an Online Players embed in your Discord
+![embed](https://i.imgur.com/TdJrgZV.png)
+
+
+## Commands
+
+Information:
+- /configuration settings -> See the current settings for your server such as your notifications channel and who you are tracking.
+- /information relations -> Check to see the enemies and allies of a particular nation
+
+Notifications:
+- /notification channel -> Set the channel in which notifications will appear for nations you track
+- /notification status -> Enable/Disable notifications for your server
+- /notifications add -> Add a nation to track in your notifications
+- /notificcations remove -> Remove a nation from tracking
+
+Online Players Embeds:
+- /embed add -> Create a new embed message in the current channel which will then turn into the Online Player Embed after some time (Cannot have more than one nation at a time)
+- /embed remove -> Destroy the current Online Embed making it no longer update
+
+Verifications:
+- /verify add -> Link a Discord user and a Minecraft user together on your server.
+- /verify remove -> Unlink a Discord and Minecraft user
+- /verify check -> See what Minecraft username a Discord user is linked to
+- /verify give-verified-role -> Enable/Disable automatically giving verified members your citizen role (Only will turn on if the citizen role has been set)
+- /verify verify-checkup -> Scans through your verified players and removes them if they have left the server and also gives verified members the citizen role (If citizen role has been set)
+## Installation
+
+Install Python3, venv and pip:
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv -y
+```
+
+Clone the repository in your desired directory:
+```bash
+git clone github.com/CreVolve-Dev/EarthMC-Tracker.git
+cd EarthMC-Tracker
+```
+
+Edit the process.json file to include your bot's token:
+```bash
+sudo nano process.json
+```
+
+Go into the bot folder and create a new virtual enviornment:
+```bash
+cd bot
+python3 -m venv bot-venv
+```
+
+Activate the virtual enviornment and download the required Python libraries:
+```bash
+#Mac or Linux
+source bot-venv/bin/activate
+
+#Windows
+bot-venv/scripts/activate
+
+pip3 install -r requirements.txt
+```
+### Activating
+
+Start the bot by running the main script:
+```bash
+python3 main.py
+```
+
+OR
+
+Install Node.js and PM2:
+```bash
+curl -L https://deb.nodesource.com/setup_18.x | bash -
+sudo apt install -y nodejs
+sudo npm install -g pm2
+```
+
+Start the PM2 Task:
+```bash
+pm2 start process.json
+```
+## Contributing
+
+Thank you for wanting to contribute to this project!  
+For major changes to the bot open an issue first then talk about what you want changed.
+
+For smaller things such as bug fixes or tweaks:
+- Fork the Repo
+- Apply your changes
+- Test your changes thurougly
+- Send a pull request
+
+PLEASE: Test your changes before sending in pull requests. I don't want to spend hours debugging your code...
+
+
+## Roadmap
+
+- Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation
+- Add a way to set a "default nation" for a server so when you don't specify a target it is automatically assumed
+- Allow multiple OnlineEmbeds as well as letting you choose which channel and whether they are enabled/disabled
+
+
+## Authors
+
+- [@CreVolve](https://github.com/CreVolve-Dev) - Lead Developer

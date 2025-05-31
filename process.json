@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "earthmc-nation-tracker",
+      "script": "/bot/main.py",
+      "interpreter": "/bot-venv/bin/python3",
+      "env": {
+        "BOT_TOKEN": "Put your bot token in these quotes"
+      },
+      "watch": false,
+      "restart_delay": 5000
+    }
+  ]
+}
