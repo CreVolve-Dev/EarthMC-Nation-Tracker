@@ -3,6 +3,8 @@ from disnake.ext import commands
 import asyncio
 import os
 
+import utils.checkDirectory as checkDirectory
+
 asyncio.set_event_loop(asyncio.new_event_loop())
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
@@ -37,5 +39,8 @@ bot.load_extension("cogs.embeds")
 bot.load_extension("background_tasks.notificationLoop")
 bot.load_extension("background_tasks.onlineEmbed")
 bot.load_extension("background_tasks.verifyCheckup")
+
+checkDirectory.check_directory("./api_storage")
+checkDirectory.check_directory("./server_configurations")
 
 bot.run(BOT_TOKEN)

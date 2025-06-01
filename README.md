@@ -1,19 +1,16 @@
-
 ![Logo](https://i.imgur.com/0ih5Uv0.png)
 
-EMC Nation Tracker (ENT) is a disnake bot focused around making it easier for EarthMC players to track what happens within their nations. It aims to better integrate EarthMC with Discord by showing things such as citizens joining and leaving your nation, who is online, and keeping track of who in your Discord is verified as a citizen.  
+EMC Nation Tracker (ENT) is a disnake bot focused around making it easier for EarthMC players to track what happens within their nations. It aims to better integrate EarthMC with Discord by showing things such as citizens joining and leaving your nation, who is online, and keeping track of who in your Discord is verified as a citizen.
 ## Features
 
-- See current relationships with other nations with /information relations
+- See current relationships with other nations with /information relations  
 ![information](https://i.imgur.com/uisBvzW.gif)
-- Get notified on when people leave and join your nation in a dedicated notifications channel
+- Get notified on when people leave and join your nation in a dedicated notifications channel  
 ![notification](https://i.imgur.com/RNzrVak.png)
-- Ensure the integrity of your citizens by verifying them on your Discord automatically
+- Ensure the integrity of your citizens by verifying them on your Discord automatically  
 ![verify](https://i.imgur.com/I5I1kyR.gif)
-- See who is online at any time by having an Online Players embed in your Discord
+- See who is online at any time by having an Online Players embed in your Discord  
 ![embed](https://i.imgur.com/TdJrgZV.png)
-
-
 ## Commands
 
 Information:
@@ -24,7 +21,7 @@ Notifications:
 - /notification channel -> Set the channel in which notifications will appear for nations you track
 - /notification status -> Enable/Disable notifications for your server
 - /notifications add -> Add a nation to track in your notifications
-- /notificcations remove -> Remove a nation from tracking
+- /notifications remove -> Remove a nation from tracking
 
 Online Players Embeds:
 - /embed add -> Create a new embed message in the current channel which will then turn into the Online Player Embed after some time (Cannot have more than one nation at a time)
@@ -50,18 +47,18 @@ git clone github.com/CreVolve-Dev/EarthMC-Tracker.git
 cd EarthMC-Tracker
 ```
 
-Edit the process.json file to include your bot's token:
+Edit the processSetup file to include your bot's token:
 ```bash
-sudo nano process.json
+sudo nano processSetup.js
 ```
 
-Go into the bot folder and create a new virtual enviornment:
+Go into the bot folder and create a new virtual environment:
 ```bash
 cd bot
 python3 -m venv bot-venv
 ```
 
-Activate the virtual enviornment and download the required Python libraries:
+Activate the virtual environment and download the required Python libraries:
 ```bash
 #Mac or Linux
 source bot-venv/bin/activate
@@ -73,13 +70,6 @@ pip3 install -r requirements.txt
 ```
 ### Activating
 
-Start the bot by running the main script:
-```bash
-python3 main.py
-```
-
-OR
-
 Install Node.js and PM2:
 ```bash
 curl -L https://deb.nodesource.com/setup_18.x | bash -
@@ -87,9 +77,11 @@ sudo apt install -y nodejs
 sudo npm install -g pm2
 ```
 
-Start the PM2 Task:
+Create your PM2 config file and start the PM2 task:
 ```bash
-pm2 start process.json
+cd ..
+node processSetup.js
+pm2 start pm2.config.js
 ```
 ## Contributing
 
@@ -99,19 +91,15 @@ For major changes to the bot open an issue first then talk about what you want c
 For smaller things such as bug fixes or tweaks:
 - Fork the Repo
 - Apply your changes
-- Test your changes thurougly
+- Test your changes thoroughly
 - Send a pull request
 
 PLEASE: Test your changes before sending in pull requests. I don't want to spend hours debugging your code...
-
-
 ## Roadmap
 
 - Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation
 - Add a way to set a "default nation" for a server so when you don't specify a target it is automatically assumed
 - Allow multiple OnlineEmbeds as well as letting you choose which channel and whether they are enabled/disabled
-
-
 ## Authors
 
 - [@CreVolve](https://github.com/CreVolve-Dev) - Lead Developer
