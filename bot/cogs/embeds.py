@@ -18,7 +18,12 @@ class Embeds(commands.Cog):
         pass
 
     @embed.sub_command(name="add", description="Creates a new online embed")
-    async def add(self, inter : disnake.GuildCommandInteraction, target : str):
+    async def add(self, inter : disnake.GuildCommandInteraction, target : str = "default"):
+        if target == "default":
+            target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else "default"
+            if target == "default":
+                await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+
         if checkNation.check_nation(target):
             for filename in os.listdir(constants.GROUP_STORAGE_DATA):
                 path = os.path.join(constants.GROUP_STORAGE_DATA, filename)

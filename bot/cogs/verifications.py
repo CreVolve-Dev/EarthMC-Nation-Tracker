@@ -3,8 +3,7 @@ from disnake.ext import commands
 
 import utils.updateConfigurations as updateConfigurations
 import utils.giveRole as giveRole
-
-true_or_false = commands.option_enum(["True", "False"])
+import utils.postAPI as postAPI
 
 class Verify(commands.Cog):
     def __init__(self, bot):
@@ -15,12 +14,19 @@ class Verify(commands.Cog):
         pass
 
     @verify.sub_command(name="give-verified-role", description="Toggle whether members get your citizen role when verified")
-    async def give_verified_role(self, inter : disnake.GuildCommandInteraction, status: true_or_false):
+    async def give_verified_role(self, inter : disnake.GuildCommandInteraction, status : bool):
         updateConfigurations.update_configuration(context=inter, give_verified_role=status)
+        await inter.response.send_message(f"Updated give_verified_role to **{status}**")
 
     @verify.sub_command(name="verified-checkup", description="Automatically remove people who have left the server from verifications")
-    async def verified_checkup(self, inter : disnake.GuildCommandInteraction, status: true_or_false):
+    async def verified_checkup(self, inter : disnake.GuildCommandInteraction, status : bool):
         updateConfigurations.update_configuration(context=inter, verified_checkup=status)
+        await inter.response.send_message(f"Updated verified_checkup to **{status}**")
+
+    @verify.sub_command(name="online-verify-check", description="Check if a user's minecraft username is a citizen of your nation before verifying")
+    async def online_verify_check(self, inter : disnake.GuildCommandInteraction, status : bool):
+        updateConfigurations.update_configuration(context=inter, online_verify_check=status)
+        await inter.response.send_message(f"Updated online_verify_check to **{status}**")
 
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
     async def add(self, inter : disnake.GuildCommandInteraction, member: disnake.User, minecraft_username : str):
@@ -38,10 +44,22 @@ class Verify(commands.Cog):
                     await inter.response.send_message(f"You have already verified the Minecraft user: **{minecraft_username}**")
                     return
 
-            updateConfigurations.update_configuration(inter, verified_citizen=possible_upload_data)
+            if server_data["online_verify_check"]:
+                player_data = postAPI.post_api_data('/players', minecraft_username)
+                print(player_data)
+                if not player_data:
+                    await inter.response.send_message(f"**{minecraft_username}** is not a real player")
+                    return
+                if player_data[0]["nation"]["name"] == server_data["default_nation"]:
+                    updateConfigurations.update_configuration(inter, verified_citizen=possible_upload_data)
+                else:
+                    await inter.response.send_message(f"**{minecraft_username}** is not a citizen of your nation")
+                    return
+            else:
+                updateConfigurations.update_configuration(inter, verified_citizen=possible_upload_data)
 
             try:
-                if server_data["give_verified_role"] == "True":
+                if server_data["give_verified_role"]:
                     if not await giveRole.give_role(member, inter, server_data["citizen_role"]):
                         await inter.response.send_message(f"Verified **{member.mention}** with link to **{minecraft_username}** but couldn't find the Citizen Role to add.")
 

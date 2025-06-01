@@ -29,6 +29,7 @@ def save_server_config(guild_id, data):
         print(f"Saved configurations: {data}, to file: {path}")
 
 def update_configuration(context,
+    default_nation=None,
     notifications_channel=None,
     notifications_status=None,
     embed_message=None,
@@ -37,6 +38,7 @@ def update_configuration(context,
     foreign_role=None,
     verified_checkup=None,
     give_verified_role=None,
+    online_verify_check=None,
     tracked_nations=None,
     verified_citizen=None):
 
@@ -47,7 +49,7 @@ def update_configuration(context,
     fields = [
         "notifications_channel", "notifications_status", "embed_message",
         "embed_channel", "citizen_role", "foreign_role", "verified_checkup",
-        "give_verified_role"
+        "give_verified_role", "online_verify_check", "default_nation"
     ]
     # Gather arguments into a dict
     params = {k: v for k, v in locals().items() if k in fields and v is not None}
@@ -90,35 +92,17 @@ def update_configuration(context,
     save_server_config(guild_id, config)
 
 def remove_configuration(context,
-    notifications_channel=None,
-    notifications_status=None,
-    embed_message=None,
-    embed_channel=None,
-    citizen_role=None,
-    foreign_role=None,
-    verified_checkup=None,
-    give_verified_role=None,
     tracked_nations=None,
     verified_citizen=None):
 
     ensure_dir(constants.SERVER_CONFIGURATION_PATH)
     guild_id = str(context.guild.id)
 
-    fields = [
-        "notifications_channel", "notifications_status", "embed_message",
-        "embed_channel", "citizen_role", "foreign_role", "verified_checkup",
-        "give_verified_role",
-    ]
-
-    params = {k: v for k, v in locals().items() if k in fields and v is not None}
-
     config = load_server_config(guild_id)
 
     if config is None:
         return None
     else:
-        for k, v in params.items():
-            config[k] = v
         current_tracked_nations = config.get("tracked_nations")
         if tracked_nations is not None:
             if tracked_nations in current_tracked_nations:

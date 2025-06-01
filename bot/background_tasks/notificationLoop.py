@@ -39,7 +39,7 @@ class NotificationLoop(commands.Cog):
                         if audience_data["notifications_channel"] is not None:
                             send_channel = await self.bot.fetch_channel(int(audience_data["notifications_channel"]))
 
-                        if audience_data["notifications_status"] == "True":
+                        if audience_data["notifications_status"]:
                             if send_channel is not None:
                                 for resident in residents_gained:
                                     await send_channel.send(
