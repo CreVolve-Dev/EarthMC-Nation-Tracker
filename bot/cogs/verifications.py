@@ -25,7 +25,8 @@ class Verify(commands.Cog):
 
     @verify.sub_command(name="online-verify-check", description="Check if a user's minecraft username is a citizen of your nation before verifying")
     async def online_verify_check(self, inter : disnake.GuildCommandInteraction, status : bool):
-        if updateConfigurations.load_server_config(inter.guild.id)["default_nation"]:
+        server_data = updateConfigurations.load_server_config(inter.guild.id)
+        if server_data is not None and server_data.get("default_nation") is not None:
             updateConfigurations.update_configuration(context=inter, online_verify_check=status)
             await inter.response.send_message(f"Updated online_verify_check to **{status}**")
         else:
