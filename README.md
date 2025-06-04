@@ -97,8 +97,9 @@ For smaller things such as bug fixes or tweaks:
 PLEASE: Test your changes before sending in pull requests. I don't want to spend hours debugging your code...
 ## Roadmap
 
-- Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation
-- Add a way to set a "default nation" for a server so when you don't specify a target it is automatically assumed
+- ~~Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation~~ - Done
+- ~~Add a way to set a "default nation" for a server so when you don't specify a target it is automatically assumed~~ - Done
+- Add more notification events such as towns leaving or joining and other nations changing their relationship with you - In Progress
 - Allow multiple OnlineEmbeds as well as letting you choose which channel and whether they are enabled/disabled
 ## Authors
 
