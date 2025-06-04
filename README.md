@@ -44,7 +44,7 @@ sudo apt install python3 python3-pip python3-venv -y
 Clone the repository in your desired directory:
 ```bash
 git clone https://github.com/CreVolve-Dev/EarthMC-Nation-Tracker.git
-cd EarthMC-Tracker
+cd EarthMC-Nation-Tracker
 ```
 
 Edit the processSetup file to include your bot's token:
