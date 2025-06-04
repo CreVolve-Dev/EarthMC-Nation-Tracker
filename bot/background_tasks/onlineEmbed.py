@@ -2,6 +2,7 @@ import disnake
 import os
 import json
 from disnake.ext import tasks, commands
+import asyncio
 
 import datetime
 
@@ -23,6 +24,8 @@ async def create_online_embed(target):
         if player_data[0]["status"]["isOnline"]:
             online_players.append(player_data[0]["name"])
             print(f"{player_data[0]["name"]} is online")
+
+        await asyncio.sleep(0.5)
 
     print(f"{len(online_players)} players online")
     print(f"{formatList.format_list(online_players)} online players")
