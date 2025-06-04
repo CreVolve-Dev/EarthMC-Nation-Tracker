@@ -17,6 +17,7 @@ async def create_online_embed(target):
     api_nation_data = await asyncPostAPI.post_api_data('nations', target)
 
     for resident in api_nation_data[0]["residents"]:
+        print(f"Checking {resident['name']}")
         player_data = await asyncPostAPI.post_api_data('players', resident["name"])
 
         if player_data[0]["status"]["isOnline"]:
@@ -53,8 +54,9 @@ class OnlineEmbed(commands.Cog):
     def cog_unload(self):
         self.online_embed.cancel()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=5)
     async def online_embed(self):
+        print("[online_embed] Starting...")
         try:
             nations_to_embed = [nations.replace(".json", "") for nations in
                                 os.listdir(constants.GROUP_STORAGE_DATA)]
@@ -92,6 +94,8 @@ class OnlineEmbed(commands.Cog):
                         print(f"[online_embed] Error processing nation {nation}: {e}")
         except Exception as e:
             print(e)
+
+        print("[online_embed] Finished.")
 
     @online_embed.before_loop
     async def online_embed_before_loop(self):

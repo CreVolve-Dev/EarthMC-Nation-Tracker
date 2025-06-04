@@ -16,6 +16,7 @@ class NotificationLoop(commands.Cog):
 
     @tasks.loop(seconds=30)
     async def notification_loop(self):
+        print("[notification_loop] Starting...")
         nations_to_track = [nations.replace(".json", "") for nations in os.listdir(constants.GROUP_STORAGE_DATA)]
 
         if nations_to_track:
@@ -24,6 +25,7 @@ class NotificationLoop(commands.Cog):
                     nation_data = json.load(f)
 
                 api_nation_data = await asyncPostAPI.post_api_data('nations', nation)
+                print(api_nation_data)
                 api_resident_data = list(api_nation_data[0]["residents"])
                 api_resident_list = [resident['name'] for resident in api_resident_data]
 
@@ -55,6 +57,7 @@ class NotificationLoop(commands.Cog):
 
                 with open(f"{constants.GROUP_STORAGE_DATA}/{nation}.json", "w") as f:
                     json.dump(updated_nation_data, f)
+        print("[notification_loop] Finished.")
 
     @notification_loop.before_loop
     async def before_notification_loop(self):

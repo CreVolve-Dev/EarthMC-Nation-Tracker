@@ -12,6 +12,7 @@ class Roles(commands.Cog):
         pass
 
     @roles.sub_command(name="set-citizen", description="Set the role given to citizens of your nation")
+    @commands.has_guild_permissions(manage_guild=True)
     async def citizen_role(self, inter: disnake.GuildCommandInteraction, role: disnake.Role):
         updateConfigurations.update_configuration(context=inter, citizen_role=role.id)
         await inter.response.send_message(f"Updated citizen role to **{role.mention}**")
@@ -19,6 +20,7 @@ class Roles(commands.Cog):
 
 
     @roles.sub_command(name="set-foreign", description="Set the role given to foreigners of your nation")
+    @commands.has_guild_permissions(manage_guild=True)
     async def foreign_role(self, inter: disnake.GuildCommandInteraction, role: disnake.Role):
         updateConfigurations.update_configuration(context=inter, foreign_role=role.id)
         await inter.response.send_message(f"Updated foreign role to **{role.mention}**")

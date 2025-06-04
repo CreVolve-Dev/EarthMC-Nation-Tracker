@@ -1,7 +1,6 @@
 import disnake
 from disnake.ext import commands
-import utils.updateConfigurations as update_configurations
-import utils.formatList as formatList
+import utils.updateConfigurations as updateConfigurations
 import utils.checkNation as checkNation
 
 def status_string(value):
@@ -21,16 +20,18 @@ class Configurations(commands.Cog):
         pass
 
     @configure.sub_command(name="nation", description="Set your server's nation. This is used for majority of commands.")
+    @commands.has_guild_permissions(manage_guild=True)
     async def nation(self, inter: disnake.GuildCommandInteraction, target : str):
         if checkNation.check_nation(target):
-            update_configurations.update_configuration(context=inter, default_nation=target)
+            updateConfigurations.update_configuration(context=inter, default_nation=target, tracked_nations=target)
             await inter.response.send_message(f"**{target}** is now the nation of this server")
         else:
             await inter.response.send_message(f"**{target}** is not a real nation")
 
     @configure.sub_command(name="settings", description="See your server's configuration settings")
+    @commands.has_guild_permissions(manage_guild=True)
     async def settings(self, inter : disnake.GuildCommandInteraction):
-        json_data = update_configurations.load_server_config(inter.guild.id)
+        json_data = updateConfigurations.load_server_config(inter.guild.id)
 
         if not json_data:
             json_data = {}

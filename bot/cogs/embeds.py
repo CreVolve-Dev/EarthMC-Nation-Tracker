@@ -18,6 +18,7 @@ class Embeds(commands.Cog):
         pass
 
     @embed.sub_command(name="add", description="Creates a new online embed")
+    @commands.has_guild_permissions(manage_guild=True)
     async def add(self, inter : disnake.GuildCommandInteraction, target : str = "default"):
         if target == "default":
             target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else "default"
@@ -64,6 +65,7 @@ class Embeds(commands.Cog):
             await inter.response.send_message(f"**{target}** is not a real nation")
 
     @embed.sub_command(name="remove", description="Removes your current online embed")
+    @commands.has_guild_permissions(manage_guild=True)
     async def remove(self, inter : disnake.GuildCommandInteraction):
         for filename in os.listdir(constants.GROUP_STORAGE_DATA):
             path = os.path.join(constants.GROUP_STORAGE_DATA, filename)

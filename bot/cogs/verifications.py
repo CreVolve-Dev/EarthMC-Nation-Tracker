@@ -9,21 +9,24 @@ class Verify(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.slash_command(name="verify", description="Related to verification", default_member_permissions=disnake.Permissions(moderate_members=True))
+    @commands.slash_command(name="verify", description="Related to verification")
     async def verify(self, inter : disnake.GuildCommandInteraction):
         pass
 
     @verify.sub_command(name="give-verified-role", description="Toggle whether members get your citizen role when verified")
+    @commands.has_guild_permissions(manage_guild=True)
     async def give_verified_role(self, inter : disnake.GuildCommandInteraction, status : bool):
         updateConfigurations.update_configuration(context=inter, give_verified_role=status)
         await inter.response.send_message(f"Updated give_verified_role to **{status}**")
 
     @verify.sub_command(name="verified-checkup", description="Automatically remove people who have left the server from verifications")
+    @commands.has_guild_permissions(manage_guild=True)
     async def verified_checkup(self, inter : disnake.GuildCommandInteraction, status : bool):
         updateConfigurations.update_configuration(context=inter, verified_checkup=status)
         await inter.response.send_message(f"Updated verified_checkup to **{status}**")
 
     @verify.sub_command(name="online-verify-check", description="Check if a user's minecraft username is a citizen of your nation before verifying")
+    @commands.has_guild_permissions(manage_guild=True)
     async def online_verify_check(self, inter : disnake.GuildCommandInteraction, status : bool):
         server_data = updateConfigurations.load_server_config(inter.guild.id)
         if server_data is not None and server_data.get("default_nation") is not None:
@@ -33,6 +36,7 @@ class Verify(commands.Cog):
             await inter.response.send_message("You need to set a default nation first with /configure nation")
 
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
+    @commands.has_guild_permissions(moderate_members=True)
     async def add(self, inter : disnake.GuildCommandInteraction, member: disnake.User, minecraft_username : str):
         server_data = updateConfigurations.load_server_config(inter.guild.id)
 
@@ -74,6 +78,7 @@ class Verify(commands.Cog):
         await inter.response.send_message(f"Verified **{member.mention}** with link to **{minecraft_username}**")
 
     @verify.sub_command(name="remove", description="Remove a citizen verification")
+    @commands.has_guild_permissions(moderate_members=True)
     async def remove(self, inter : disnake.GuildCommandInteraction, member: disnake.User):
         server_data = updateConfigurations.load_server_config(inter.guild.id)
 
