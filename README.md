@@ -43,7 +43,7 @@ sudo apt install python3 python3-pip python3-venv -y
 
 Clone the repository in your desired directory:
 ```bash
-git clone github.com/CreVolve-Dev/EarthMC-Tracker.git
+git clone https://github.com/CreVolve-Dev/EarthMC-Nation-Tracker.git
 cd EarthMC-Tracker
 ```
 
