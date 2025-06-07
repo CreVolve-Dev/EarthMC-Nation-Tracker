@@ -1,3 +1,6 @@
 disnake~=2.10.1
+countryflag~=0.1.2b3
 requests~=2.32.3
 aiohttp~=3.12.2
+asyncio~=3.4.3
+aiofiles~=24.1.0
