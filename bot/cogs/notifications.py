@@ -2,7 +2,6 @@ import disnake
 from disnake.ext import commands
 
 import os
-import constants
 import json
 from utils.grabAPI import GrabAPI
 import utils.checkNation as checkNation

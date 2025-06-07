@@ -8,7 +8,6 @@ from models.nationData import Nation
 from models.serverConfiguration import ServerConfiguration
 from utils.grabObjects import GrabObjects
 from utils.grabAPI import GrabAPI
-import constants
 
 logging.basicConfig(level=logging.INFO)
 

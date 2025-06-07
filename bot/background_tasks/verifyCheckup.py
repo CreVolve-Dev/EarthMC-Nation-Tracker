@@ -7,7 +7,6 @@ from models.serverConfiguration import ServerConfiguration
 from utils.grabObjects import GrabObjects
 from utils.grabAPI import GrabAPI
 
-import constants
 import logging
 import asyncio
 

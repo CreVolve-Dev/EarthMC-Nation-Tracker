@@ -1,8 +1,6 @@
 import disnake
 from disnake.ext import commands
 
-import constants
-
 import utils.checkNation as checkNation
 
 from models.serverConfiguration import ServerConfiguration
