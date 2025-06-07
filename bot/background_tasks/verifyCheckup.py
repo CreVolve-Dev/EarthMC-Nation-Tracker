@@ -3,7 +3,13 @@ import json
 import disnake
 from disnake.ext import commands, tasks
 
+from models.serverConfiguration import ServerConfiguration
+from utils.grabObjects import GrabObjects
+from utils.grabAPI import GrabAPI
+
 import constants
+import logging
+import asyncio
 
 class VerifyCheckup(commands.Cog):
     def __init__(self, bot):
@@ -15,34 +21,39 @@ class VerifyCheckup(commands.Cog):
 
     @tasks.loop(seconds=30)
     async def verify_checkup(self):
-        servers_to_check = [server.replace(".json", "") for server in os.listdir(constants.SERVER_CONFIGURATION_PATH)]
+        logging.info("[verify_checkup] Starting...")
+        servers_to_check = await ServerConfiguration.all()
 
-        for server in servers_to_check:
-            with open(f"{constants.SERVER_CONFIGURATION_PATH}/{server}.json", "r+") as file:
-                data = json.load(file)
-                try:
-                    if data["verified_checkup"] not in ["None", None, "False", False]:
-                        server_object = await self.bot.fetch_guild(server)
-                        try:
-                            citizen_role = server_object.fetch_role(data["citizen_role"])
-                        except disnake.NotFound:
-                            data["citizen_role"] = None
-                            file.seek(0)
-                            json.dump(data, file, indent=4)
-                            file.truncate()
-                        verified_citizens = data["verified_citizens"]
-                        for verified_citizen in data["verified_citizens"]:
-                            try:
-                                citizen_object = await server_object.fetch_user(verified_citizen["discord"])
-                                await citizen_object.add_roles(citizen_role)
-                            except disnake.NotFound:
-                                verified_citizens.remove(verified_citizen)
-                        data["verified_citizens"] = verified_citizens
-                        file.seek(0)
-                        json.dump(data, file, indent=4)
-                        file.truncate()
-                except KeyError:
-                    pass
+        tasks = [self.process_server(server) for server in servers_to_check]
+        await asyncio.gather(*tasks)
+
+        logging.info("[verify_checkup] Finished.")
+
+    async def process_server(self, server):
+        if not server.verified_checkup:
+            return
+        server_object = await GrabObjects.get_guild(self, server.server_id)
+        if server_object is None:
+            return
+        try:
+            give_citizen_role = await server_object.fetch_role(server.citizen_role)
+        except disnake.NotFound:
+            server.citizen_role = None
+            await server.save()
+            return
+        await self.process_citizens(server, server_object, give_citizen_role)
+
+    async def process_citizens(self, server, server_object, give_citizen_role):
+        for citizen in server.verified_citizens:
+            try:
+                citizen_object = await server_object.fetch_member(citizen["discord"])
+                await citizen_object.add_roles(give_citizen_role)
+            except disnake.NotFound:
+                server.verified_citizens.remove(citizen)
+            except disnake.Forbidden:
+                continue
+            await asyncio.sleep(0)
+        await server.save()
 
     @verify_checkup.before_loop
     async def before_verify_checkup(self):

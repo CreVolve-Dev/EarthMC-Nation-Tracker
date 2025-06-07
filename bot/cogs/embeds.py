@@ -1,13 +1,12 @@
 import disnake
 from disnake.ext import commands
 
-import json
 import constants
-import os
 
-import utils.postAPI as postAPI
-import utils.updateConfigurations as updateConfigurations
 import utils.checkNation as checkNation
+
+from models.serverConfiguration import ServerConfiguration
+from models.nationData import Nation
 
 class Embeds(commands.Cog):
     def __init__(self, bot):
@@ -19,69 +18,45 @@ class Embeds(commands.Cog):
 
     @embed.sub_command(name="add", description="Creates a new online embed")
     @commands.has_guild_permissions(manage_guild=True)
-    async def add(self, inter : disnake.GuildCommandInteraction, target : str = "default"):
-        if target == "default":
-            target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else "default"
-            if target == "default":
-                await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+    async def add(self, inter : disnake.GuildCommandInteraction, target : str = None):
+        if not checkNation.check_nation(target):
+            return await inter.response.send_message(f"**{target}** is not a real nation")
 
-        if checkNation.check_nation(target):
-            for filename in os.listdir(constants.GROUP_STORAGE_DATA):
-                path = os.path.join(constants.GROUP_STORAGE_DATA, filename)
-                with open(path, "r+") as f:
-                    data = json.load(f)
-                    if inter.guild.id in data.get("embed_audience", []):
-                        data["embed_audience"].remove(inter.guild.id)
-                        f.seek(0)
-                        json.dump(data, f, indent=4)
-                        f.truncate()
+        if not target:
+            config = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+            if not config or not config.default_nation:
+                return await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+            target = config.default_nation
 
-            path = os.path.join(constants.GROUP_STORAGE_DATA, f"{target}.json")
-            if os.path.exists(path):
-                with open(path, "r+") as f:
-                    data = json.load(f)
-                    if inter.guild.id in data.get("embed_audience", []):
-                        await inter.response.send_message(f"Your online embed is already set to **{target}**")
-                    data["embed_audience"].append(inter.guild.id)
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()
-            else:
-                target_data = postAPI.post_api_data('/nations', target)[0]
-                residents = [r['name'] for r in target_data['residents']]
-                data = {
-                    "target": target,
-                    "residents": residents,
-                    "audience": [],
-                    "embed_audience": [inter.guild.id]
-                }
-                with open(path, "w") as f:
-                    json.dump(data, f, indent=4)
+        nations = await Nation.all()
+        for nation in nations:
+            if inter.guild.id in nation.embed_audience:
+                nation.embed_audience.remove(inter.guild.id)
+                await nation.save()
 
-            await inter.response.send_message(f"Online embed set to **{target}**. A temporary message has been made that will become the embed.", ephemeral=True)
-            set_message = await inter.followup.send("This is a placeholder until an online embed is ready...")
-            updateConfigurations.update_configuration(inter, embed_message=set_message.id, embed_channel=set_message.channel.id)
+        await inter.response.send_message(f"Online embed set to **{target}**. A temporary message has been made that will become the embed.", ephemeral=True)
+        set_message = await inter.followup.send("This is a placeholder until an online embed is ready...")
+
+        await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"online_embed_channel": set_message.channel.id, "online_embed_message": set_message.id})
+
+        nation_data = await Nation.get_or_none(name=target.lower())
+        if not nation_data:
+            await Nation.create(name=target.lower(), embed_audience=[inter.guild.id])
         else:
-            await inter.response.send_message(f"**{target}** is not a real nation")
+            nation_data.embed_audience.append(inter.guild.id)
+            await nation_data.save()
 
     @embed.sub_command(name="remove", description="Removes your current online embed")
     @commands.has_guild_permissions(manage_guild=True)
     async def remove(self, inter : disnake.GuildCommandInteraction):
-        for filename in os.listdir(constants.GROUP_STORAGE_DATA):
-            path = os.path.join(constants.GROUP_STORAGE_DATA, filename)
-            with open(path, "r+") as f:
-                data = json.load(f)
-                if inter.guild.id in data.get("embed_audience", []):
-                    data["embed_audience"].remove(inter.guild.id)
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()
-
-                    updateConfigurations.update_configuration(inter, embed_message=None, embed_channel=None)
-                    await inter.response.send_message(f"Removed your online embed")
-
-                else:
-                    await inter.response.send_message(f"You don't have an online embed")
+        for nation in await Nation.all():
+            if inter.guild.id == nation.embed_audience:
+                nation.embed_audience.remove(inter.guild.id)
+                await nation.save()
+                await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"online_embed_channel": None, "online_embed_message": None})
+                await inter.response.send_message(f"Removed your online embed")
+            else:
+                await inter.response.send_message(f"You don't have an online embed")
 
 def setup(bot):
     bot.add_cog(Embeds(bot))

@@ -4,10 +4,15 @@ from disnake.ext import commands
 import os
 import constants
 import json
-import utils.postAPI as postAPI
+from utils.grabAPI import GrabAPI
 import utils.checkNation as checkNation
 
-import utils.updateConfigurations as updateConfigurations
+from models.serverConfiguration import ServerConfiguration
+from models.nationData import Nation, Town, Citizen
+
+from bot.models.nationData import Town
+
+notif_types = commands.option_enum({"Citizens": "citizens", "Towns": "towns", "All": "all"})
 
 class Notifications(commands.Cog):
     def __init__(self, bot):
@@ -19,88 +24,99 @@ class Notifications(commands.Cog):
 
     @notifications.sub_command(name="channel", description="Set the notifications channel for updated info on your nation")
     @commands.has_guild_permissions(manage_guild=True)
-    async def notifications_channel(self, inter : disnake.GuildCommandInteraction, channel: disnake.TextChannel):
-        updateConfigurations.update_configuration(context=inter, notifications_channel=channel.id)
-        await inter.response.send_message(f"Updated notifications channel to **{channel.mention}**")
+    async def notifications_channel(self, inter : disnake.GuildCommandInteraction, channel: disnake.TextChannel, types: notif_types = "all"):
+        if channel.guild.id != inter.guild.id:
+            return await inter.response.send_message("The channel you provided is not in this server")
+
+        if types == "all":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"player_updates_channel": channel.id, "town_updates_channel": channel.id})
+        elif types == "citizens":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"player_updates_channel": channel.id})
+        elif types == "towns":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"town_updates_channel": channel.id})
+        await inter.response.send_message(f"Updated **{types}** notifications channel to **{channel.mention}**")
         print(f"Guild {inter.guild.id} has updated notifications channel to {channel.mention}")
 
     @notifications.sub_command(name="status", description="Turn on or off notifications for updated info on your nation")
     @commands.has_guild_permissions(manage_guild=True)
-    async def notifications_status(self, inter : disnake.GuildCommandInteraction, status : bool):
-        updateConfigurations.update_configuration(context=inter, notifications_status=status)
-        await inter.response.send_message(f"Set notifications to **{status}**")
+    async def notifications_status(self, inter : disnake.GuildCommandInteraction, status : bool, types: notif_types = "all"):
+        if types == "all":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"player_updates_status": status, "town_updates_status": status})
+        elif types == "citizens":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"player_updates_status": status})
+        elif types == "towns":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"town_updates_status": status})
+        await inter.response.send_message(f"Set **{types}** notifications to **{status}**")
         print(f"Guild {inter.guild.id} has updated notifications status {status}")
 
-    @notifications.sub_command(name="add", description="Add another nation to add to your notifications")
+    @notifications.sub_command(name="add", description="Add another nation to your notifications")
     @commands.has_guild_permissions(manage_guild=True)
-    async def add_target(self, inter : disnake.GuildCommandInteraction, target : str = None):
-        if target is None:
-            target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else None
-            if target is None:
-                await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
-                return
+    async def add_target(self, inter: disnake.GuildCommandInteraction, target: str = None, types: notif_types = "all"):
+        if not target:
+            config = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+            if not config or not config.default_nation:
+                return await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+            target = config.default_nation
 
-        if checkNation.check_nation(target):
-            path = os.path.join(constants.GROUP_STORAGE_DATA, f"{target}.json")
+        if not checkNation.check_nation(target):
+            return await inter.response.send_message(f"**{target}** is not a real nation")
 
-            if os.path.exists(path):
-                with open(path, "r+") as file:
-                    data = json.load(file)
-                    if inter.guild.id in data["audience"]:
-                        await inter.response.send_message(f"You have already added **{target}** to your notifications")
-                        return
-                    data["audience"].append(inter.guild.id)
-                    file.seek(0)
-                    json.dump(data, file, indent=4)
-                    file.truncate()
-
-            else:
-                target_data = postAPI.post_api_data('/nations', target)[0]
-                residents = [r['name'] for r in target_data['residents']]
-                data = {
-                    "target": target,
-                    "residents": residents,
-                    "audience": [inter.guild.id],
-                    "embed_audience": []
-                }
-                with open(path, "w") as f:
-                    json.dump(data, f, indent=4)
-
-            await inter.response.send_message(f"Added **{target}** to your notifications")
-            updateConfigurations.update_configuration(context=inter, tracked_nations=target)
+        nation_data = await Nation.get_or_none(name=target.lower())
+        server_configuration, created = await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id)
+        if not nation_data:
+            nation_api = await GrabAPI.post_async('/nations', target)
+            nation_data = await Nation.create(name=target.lower(), player_updates_audience=[inter.guild.id] if types in ("all", "citizens") else [], town_updates_audience=[inter.guild.id] if types in ("all", "towns") else [])
+            if types in ("all", "citizens"):
+                server_configuration.player_updates_tracking.append(target)
+            if types in ("all", "towns"):
+                server_configuration.town_updates_tracking.append(target)
+            await server_configuration.save()
+            await inter.response.send_message(f"Added **{target}** to **{types}** notifications")
+            for resident in nation_api[0]["residents"]:
+                await Citizen.update_or_create(name=resident["name"], nation=nation_data)
+            for town in nation_api[0]["towns"]:
+                await Town.update_or_create(name=town["name"], nation=nation_data)
             return
         else:
-            await inter.response.send_message(f"**{target}** is not a real nation")
-            return
+            if types in ("all", "citizens") and inter.guild.id not in nation_data.player_updates_audience:
+                nation_data.player_updates_audience.append(inter.guild.id)
+            if types in ("all", "towns") and inter.guild.id not in nation_data.town_updates_audience:
+                nation_data.town_updates_audience.append(inter.guild.id)
+            await nation_data.save()
+
+        return await inter.response.send_message(f"Added **{target}** to **{types}** notifications")
 
     @notifications.sub_command(name="remove", description="Remove a nation from your notifications")
     @commands.has_guild_permissions(manage_guild=True)
-    async def remove_target(self, inter : disnake.GuildCommandInteraction, target: str = "default"):
-        path = os.path.join(constants.GROUP_STORAGE_DATA, f"{target}.json")
-        if target == "default":
-            target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else "default"
-            if target == "default":
-                await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
-                return
+    async def remove_target(self, inter : disnake.GuildCommandInteraction, target: str = None, types: notif_types = "all"):
+        if not target:
+            config = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+            if not config or not config.default_nation:
+                return await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+            target = config.default_nation
 
-        if not os.path.exists(path):
-            return False
-        with open(path, "r+") as file:
-            data = json.load(file)
-            if inter.guild.id not in data["audience"]:
-                await inter.response.send_message(f"You are not currently tracking **{target}**")
-                return
-            data["audience"].remove(inter.guild.id)
-            if not data["audience"] and not data["embed_audience"]:
-                file.close()
-                os.remove(path)
-            else:
-                file.seek(0)
-                json.dump(data, file, indent=4)
-                file.truncate()
+        server_configuration= await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+        nation_data = await Nation.get_or_none(name=target.lower())
+        if not nation_data:
+            return await inter.response.send_messag(f"You are not tracking **{target}**")
 
-        updateConfigurations.remove_configuration(context=inter, tracked_nations=target)
-        await inter.response.send_message(f"Removed **{target}** from your notifications")
+        if not server_configuration:
+            return await inter.response.send_message("You are not currently tracking any nations")
+
+        if types in ("all", "citizens"):
+            if target not in server_configuration.player_updates_tracking:
+                return await inter.response.send_message(f"**{target}** is not in **{types}** notifications")
+            server_configuration.player_updates_tracking.remove(target)
+            nation_data.player_updates_audience.remove(inter.guild.id)
+        if types in ("all", "towns"):
+            if target not in server_configuration.town_updates_tracking:
+                return await inter.response.send_message(f"**{target}** is not in **{types}** notifications")
+            server_configuration.town_updates_tracking.remove(target)
+            nation_data.town_updates_audience.remove(inter.guild.id)
+        await server_configuration.save()
+        await nation_data.save()
+
+        await inter.response.send_message(f"Removed **{target}** from **{types}** notifications")
         return
 
 def setup(bot):

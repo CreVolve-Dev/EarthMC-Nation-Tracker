@@ -1,0 +1,11 @@
+{
+  "connections": {
+    "default": ""
+  },
+  "apps": {
+    "models": {
+      "models": ["models.serverConfiguration", "models.nationData"],
+      "default_connection": "default"
+    }
+  }
+}

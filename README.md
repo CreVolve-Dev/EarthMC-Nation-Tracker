@@ -15,6 +15,7 @@ EMC Nation Tracker (ENT) is a disnake bot focused around making it easier for Ea
 
 Information:
 - /configuration settings -> See the current settings for your server such as your notifications channel and who you are tracking.
+- /configure nation -> Sets the default nation for your server which is needed for some commands
 - /information relations -> Check to see the enemies and allies of a particular nation
 
 Notifications:
@@ -33,6 +34,8 @@ Verifications:
 - /verify check -> See what Minecraft username a Discord user is linked to
 - /verify give-verified-role -> Enable/Disable automatically giving verified members your citizen role (Only will turn on if the citizen role has been set)
 - /verify verify-checkup -> Scans through your verified players and removes them if they have left the server and also gives verified members the citizen role (If citizen role has been set)
+- /verify online-verify-check -> Looks at the API to make sure the person you are verifying is actually a part of your nation (requires default nation to be set)
+- /verify nickname-verified -> Automatically nicknames verified citizens in a  "Minecraft Username | Town" format
 ## Installation
 
 Install Python3, venv and pip:
@@ -52,9 +55,10 @@ Edit the processSetup file to include your bot's token:
 sudo nano processSetup.js
 ```
 
-Go into the bot folder and create a new virtual environment:
+Go into the bot folder to add your MySQL DB url and create a new virtual environment:
 ```bash
 cd bot
+sudo nano databaseConfig.json
 python3 -m venv bot-venv
 ```
 
@@ -99,8 +103,8 @@ PLEASE: Test your changes before sending in pull requests. I don't want to spend
 
 - ~~Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation~~ - Done
 - ~~Add a way to set a "default nation" for a server so when you don't specify a target it is automatically assumed~~ - Done
-- Add more notification events such as towns leaving or joining and other nations changing their relationship with you - In Progress
-- Allow multiple OnlineEmbeds as well as letting you choose which channel and whether they are enabled/disabled
+- ~~Add more notification events such as towns leaving or joining and other nations changing their relationship with you~~ - Done
+- Allow multiple OnlineEmbeds as well as letting you choose which channel and whether they are enabled/disabled - In Progress
 ## Authors
 
 - [@CreVolve](https://github.com/CreVolve-Dev) - Lead Developer

@@ -1,10 +1,11 @@
 import disnake
 from disnake.ext import commands
 
-import utils.postAPI as postAPI
+from utils.grabAPI import GrabAPI
 import utils.formatList as formatList
 import utils.checkNation as checkNation
-import utils.updateConfigurations as updateConfigurations
+
+from models.serverConfiguration import ServerConfiguration
 
 class Information(commands.Cog):
     def __init__(self, bot):
@@ -16,13 +17,15 @@ class Information(commands.Cog):
 
     @information.sub_command(name="relations", description="Shows your nation's relationships with other nations")
     async def relations(self, inter, target : str = "default"):
-        if target == "default":
-            target = updateConfigurations.load_server_config(inter.guild.id).get("default_nation") if updateConfigurations.load_server_config(inter.guild.id).get("default_nation") else "default"
-            if target == "default":
-                await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
+        if not target:
+            config = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+            if not config or not config.default_nation:
+                return await inter.response.send_message(
+                    "Provide a nation name or set your default nation with /configure nation")
+            target = config.default_nation
 
         if checkNation.check_nation(target):
-            nation_data = postAPI.post_api_data('/nations', target)
+            nation_data = await GrabAPI.post_async('/nations', target)
 
             ally_data = nation_data[0]['allies']
             enemy_data = nation_data[0]['enemies']
