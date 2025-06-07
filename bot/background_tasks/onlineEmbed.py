@@ -1,108 +1,126 @@
 import disnake
-import os
-import json
 from disnake.ext import tasks, commands
 import asyncio
-
 import datetime
+import logging
 
-import utils.asyncPostAPI as asyncPostAPI
-import utils.formatList as formatList
-import utils.updateConfigurations as update_configurations
-
+from models.nationData import Nation
+from models.serverConfiguration import ServerConfiguration
+from utils.grabObjects import GrabObjects
+from utils.grabAPI import GrabAPI
 import constants
 
-async def create_online_embed(target):
-    online_players = []
-
-    api_nation_data = await asyncPostAPI.post_api_data('nations', target)
-
-    for resident in api_nation_data[0]["residents"]:
-        print(f"Checking {resident['name']}")
-        player_data = await asyncPostAPI.post_api_data('players', resident["name"])
-
-        if player_data[0]["status"]["isOnline"]:
-            online_players.append(player_data[0]["name"])
-            print(f"{player_data[0]["name"]} is online")
-
-        await asyncio.sleep(0.5)
-
-    print(f"{len(online_players)} players online")
-    print(f"{formatList.format_list(online_players)} online players")
-
-    embed_var = disnake.Embed(
-        title=f"Online Players in {target} | 👥",
-        description=f"Last updated: {datetime.datetime.now()}",
-        color=0xffffff
-    )
-
-    embed_var.add_field(
-        name="Online Players:",
-        value=f"```{'\n'.join(f"- {name}" for name in online_players)}```" if online_players else "```NONE```",
-        inline=False
-    )
-
-    embed_var.set_footer(
-        text="v3.0 Programmed by CreVolve",
-        icon_url="https://i.imgur.com/jdxtHVd.jpeg"
-    )
-
-    return embed_var
+logging.basicConfig(level=logging.INFO)
 
 class OnlineEmbed(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.api_semaphore = asyncio.Semaphore(10)  # Limit concurrent API calls to 10
         self.online_embed.start()
 
     def cog_unload(self):
         self.online_embed.cancel()
 
-    @tasks.loop(seconds=5)
+    async def grab_api_with_throttle(self, endpoint, data):
+        async with self.api_semaphore:
+            return await GrabAPI.post_async(endpoint, data)
+
+    async def create_online_embed(self, target):
+        online_players = []
+
+        api_nation_data = await self.grab_api_with_throttle('nations', target)
+        if not api_nation_data or "residents" not in api_nation_data[0]:
+            logging.error(f"Failed to fetch nation data for: {target}")
+            return None
+
+        player_tasks = [
+            await self.grab_api_with_throttle('players', resident["name"])
+            for resident in api_nation_data[0]["residents"]
+        ]
+        player_results = await asyncio.gather(*player_tasks, return_exceptions=True)
+
+        for player_data in player_results:
+            if isinstance(player_data, Exception):
+                logging.error(f"Error fetching player data: {player_data}")
+                continue
+
+            if player_data[0]["status"]["isOnline"]:
+                online_players.append(player_data[0]["name"])
+
+        embed_var = disnake.Embed(
+            title=f"Online Players in {target} | 👥",
+            description=f"Last updated: {datetime.datetime.now()}",
+            color=0xffffff
+        )
+
+        if online_players:
+            for i in range(0, len(online_players), 10):  # 10 players per field
+                embed_var.add_field(
+                    name=f"Players {i + 1}-{i + len(online_players[i:i + 10])}",
+                    value=f"```{'\n'.join(f'- {name}' for name in online_players[i:i + 10])}```",
+                    inline=False
+                )
+        else:
+            embed_var.add_field(name="Online Players:", value="```NONE```", inline=False)
+
+        embed_var.set_footer(
+            text="v3.0 Programmed by CreVolve",
+            icon_url="https://i.imgur.com/jdxtHVd.jpeg"
+        )
+        return embed_var
+
+    @tasks.loop(seconds=30)
     async def online_embed(self):
-        print("[online_embed] Starting...")
+        logging.info("[online_embed] Starting...")
         try:
-            nations_to_embed = [nations.replace(".json", "") for nations in
-                                os.listdir(constants.GROUP_STORAGE_DATA)]
+            nations = await Nation.all()
+            if not nations:
+                logging.warning("[online_embed] No nations found.")
+                return
 
-            if nations_to_embed:
-                for nation in nations_to_embed:
-                    try:
-                        with open(f"{constants.GROUP_STORAGE_DATA}/{nation}.json", "r") as f:
-                            nation_data = json.load(f)
+            tasks = [self.process_nation(nation) for nation in nations]
+            await asyncio.gather(*tasks)
 
-                        if nation_data["embed_audience"]:
-                            embed_var = await create_online_embed(nation_data["target"])
-
-                            for audience in nation_data["embed_audience"]:
-                                audience_data = update_configurations.load_server_config(audience)
-                                if not audience_data:
-                                    print(f"[online_embed] No config for guild {audience}, skipping.")
-                                    continue
-
-                                channel_id = audience_data.get("embed_channel")
-                                message_id = audience_data.get("embed_message")
-                                if not channel_id or not message_id:
-                                    print(
-                                        f"[online_embed] Missing channel or message ID for guild {audience}, skipping.")
-                                    continue
-
-                                try:
-                                    channel = await self.bot.fetch_channel(channel_id)
-                                    message = await channel.fetch_message(message_id)
-                                    await message.edit(content="", embed=embed_var)
-                                except Exception as e:
-                                    print(f"[online_embed] Error updating embed for guild {audience}: {e}")
-
-                    except Exception as e:
-                        print(f"[online_embed] Error processing nation {nation}: {e}")
         except Exception as e:
-            print(e)
+            logging.error(f"[online_embed] Unexpected error: {e}")
+        logging.info("[online_embed] Finished.")
 
-        print("[online_embed] Finished.")
+    async def process_nation(self, nation):
+        if not nation.embed_audience:
+            return
+
+        embed_var = await self.create_online_embed(nation.name)
+        if not embed_var:
+            logging.error(f"[process_nation] Failed to create embed for: {nation.name}")
+            return
+
+        for audience in nation.embed_audience:
+            audience_data = await ServerConfiguration.get_or_none(server_id=audience)
+            if not audience_data:
+                logging.warning(f"[process_nation] No config for guild {audience}, skipping.")
+                continue
+
+            channel_id = audience_data.online_embed_channel
+            message_id = audience_data.online_embed_message
+            if not channel_id or not message_id:
+                logging.warning(f"[process_nation] Missing channel/message ID for guild {audience}.")
+                continue
+
+            try:
+                channel = await GrabObjects.get_channel(self, channel_id)
+                message = await GrabObjects.get_message(channel, message_id)
+
+                if message:
+                    await message.edit(content="", embed=embed_var)
+                else:
+                    logging.warning(f"[process_nation] Message not found for guild {audience}.")
+            except Exception as e:
+                logging.error(f"[process_nation] Error updating embed for guild {audience}: {e}")
 
     @online_embed.before_loop
     async def online_embed_before_loop(self):
         await self.bot.wait_until_ready()
+
 
 def setup(bot):
     bot.add_cog(OnlineEmbed(bot))

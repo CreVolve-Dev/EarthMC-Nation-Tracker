@@ -1,4 +1,4 @@
-import utils.postAPI as postAPI
+from utils.grabAPI import GrabAPI
 
 def check_nation(target):
-    return True if postAPI.post_api_data("/nations", target) else False
+    return True if GrabAPI.post_async("/nations", target) else False
