@@ -1,7 +1,9 @@
 import constants
 from aiohttp.web_exceptions import HTTPError
 
+import disnake
 from disnake.ext import commands, tasks
+import logging
 
 from models.nationData import Nation, Town, Citizen
 from models.serverConfiguration import ServerConfiguration
