@@ -2,7 +2,9 @@ import os
 import json
 import constants
 
+import disnake
 from disnake.ext import commands, tasks
+import logging
 
 import utils.asyncPostAPI as asyncPostAPI
 
@@ -39,7 +41,17 @@ class NotificationLoop(commands.Cog):
                         audience_data = json.load(f)
                     try:
                         if audience_data["notifications_channel"] is not None:
-                            send_channel = await self.bot.fetch_channel(int(audience_data["notifications_channel"]))
+                            try:
+                                send_channel = await self.bot.fetch_channel(int(audience_data["notifications_channel"]))
+                            except disnake.Forbidden:
+                                logging.error("No permission to send messages to the channel.")
+                                continue
+                            except disnake.NotFound:
+                                logging.error("Channel was deleted.")
+                                continue
+                            except disnake.HTTPException as e:
+                                logging.error(f"Failed to send message: {e}")
+                                continue
 
                         if audience_data["notifications_status"]:
                             if send_channel is not None:
