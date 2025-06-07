@@ -29,7 +29,7 @@ class Configurations(commands.Cog):
     @configure.sub_command(name="nation", description="Set your server's nation. This is used for majority of commands.")
     @commands.has_guild_permissions(manage_guild=True)
     async def nation(self, inter: disnake.GuildCommandInteraction, target : str):
-        if checkNation.check_nation(target):
+        if await checkNation.check_nation(target):
             await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"default_nation": target})
             server_config = await ServerConfiguration.get(server_name=inter.guild.name, server_id=inter.guild.id)
             server_config.player_updates_tracking.append(target)

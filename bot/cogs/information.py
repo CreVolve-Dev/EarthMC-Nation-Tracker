@@ -24,8 +24,8 @@ class Information(commands.Cog):
                     "Provide a nation name or set your default nation with /configure nation")
             target = config.default_nation
 
-        if checkNation.check_nation(target):
-            nation_data = await GrabAPI.post_async('/nations', target)
+        if await checkNation.check_nation(target):
+            nation_data = await GrabAPI.post_async('nations', target)
 
             ally_data = nation_data[0]['allies']
             enemy_data = nation_data[0]['enemies']
