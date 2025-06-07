@@ -1,8 +1,6 @@
 import disnake
 from disnake.ext import commands
 
-import constants
-
 import utils.checkNation as checkNation
 
 from models.serverConfiguration import ServerConfiguration
@@ -19,7 +17,7 @@ class Embeds(commands.Cog):
     @embed.sub_command(name="add", description="Creates a new online embed")
     @commands.has_guild_permissions(manage_guild=True)
     async def add(self, inter : disnake.GuildCommandInteraction, target : str = None):
-        if not checkNation.check_nation(target):
+        if not await checkNation.check_nation(target):
             return await inter.response.send_message(f"**{target}** is not a real nation")
 
         if not target:

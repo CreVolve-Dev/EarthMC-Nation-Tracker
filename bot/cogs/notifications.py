@@ -2,7 +2,6 @@ import disnake
 from disnake.ext import commands
 
 import os
-import constants
 import json
 from utils.grabAPI import GrabAPI
 import utils.checkNation as checkNation
@@ -58,13 +57,13 @@ class Notifications(commands.Cog):
                 return await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
             target = config.default_nation
 
-        if not checkNation.check_nation(target):
+        if not await checkNation.check_nation(target):
             return await inter.response.send_message(f"**{target}** is not a real nation")
 
         nation_data = await Nation.get_or_none(name=target.lower())
         server_configuration, created = await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id)
         if not nation_data:
-            nation_api = await GrabAPI.post_async('/nations', target)
+            nation_api = await GrabAPI.post_async('nations', target)
             nation_data = await Nation.create(name=target.lower(), player_updates_audience=[inter.guild.id] if types in ("all", "citizens") else [], town_updates_audience=[inter.guild.id] if types in ("all", "towns") else [])
             if types in ("all", "citizens"):
                 server_configuration.player_updates_tracking.append(target)

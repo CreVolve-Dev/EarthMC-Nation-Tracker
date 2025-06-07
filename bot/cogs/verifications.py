@@ -8,7 +8,7 @@ import utils.grabObjects as GrabObjects
 from models.serverConfiguration import ServerConfiguration
 
 async def nickname_verified(user : disnake.Member, minecraft_username):
-    town = await GrabAPI.post_async('/players', minecraft_username)
+    town = await GrabAPI.post_async('players', minecraft_username)
     nickname = f"{minecraft_username} | {town[0]["town"]["name"]}"
     try:
         await user.edit(nick=nickname)
@@ -67,7 +67,7 @@ class Verify(commands.Cog):
                     return await inter.response.send_message(f"You have already verified the Minecraft user: **{minecraft_username}**")
 
             if server_data.online_verify_check:
-                player_data = await GrabAPI.post_async('/players', minecraft_username)
+                player_data = await GrabAPI.post_async('players', minecraft_username)
                 if not player_data:
                     return await inter.response.send_message(f"**{minecraft_username}** is not a real player")
                 if player_data[0]["nation"]["name"] == server_data["default_nation"]:

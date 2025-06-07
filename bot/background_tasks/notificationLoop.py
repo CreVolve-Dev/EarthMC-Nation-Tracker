@@ -1,4 +1,3 @@
-import constants
 from aiohttp.web_exceptions import HTTPError
 
 import disnake
