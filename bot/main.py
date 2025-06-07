@@ -82,10 +82,11 @@ async def on_slash_command_error(ctx, error):
             logger.error("Error occurred during slash command: %s", error)
 
 async def main():
+    loop = asyncio.get_event_loop()  # Get existing loop
+    bot.loop = loop  # Explicitly set bot's event loop
+
     database_config = await load_database_config()
-
     await initialize_database(database_config)
-
     await load_extensions(bot)
 
     await bot.start(BOT_TOKEN)
