@@ -57,7 +57,7 @@ sudo nano processSetup.js
 
 Go into the bot folder to add your MySQL DB url and create a new virtual environment:
 ```bash
-cd bot
+cd ent-bot
 sudo nano databaseConfig.json
 python3 -m venv bot-venv
 ```

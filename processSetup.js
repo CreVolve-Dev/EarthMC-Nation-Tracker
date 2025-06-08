@@ -1,13 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 
-const venvPython = path.resolve(__dirname, 'bot', 'bot-venv', 'bin', 'python3');
+const venvPython = path.resolve(__dirname, 'ent-bot', 'bot-venv', 'bin', 'python3');
 
 const config = {
   apps : [{
     name   : "earthmc-nation-tracker",
     script : "main.py",
-    cwd    : "./bot/",
+    cwd    : "./ent-bot/",
     interpreter : venvPython,
     env    : {
        BOT_TOKEN: "Insert your token here"
