@@ -70,7 +70,7 @@ class Verify(commands.Cog):
                 player_data = await GrabAPI.post_async('players', minecraft_username)
                 if not player_data:
                     return await inter.response.send_message(f"**{minecraft_username}** is not a real player")
-                if player_data[0]["nation"]["name"] == server_data["default_nation"]:
+                if player_data[0]["nation"]["name"] == server_data.default_nation:
                     server_data.verified_citizens.append(possible_upload_data)
                     await server_data.save()
                 else:
@@ -81,7 +81,7 @@ class Verify(commands.Cog):
 
             try:
                 if server_data.give_verified_role:
-                    if not await giveRole.give_role(member, inter, server_data["citizen_role"]):
+                    if not await giveRole.give_role(member, inter, server_data.citizen_role):
                         ServerConfiguration.citizen_role = None
                         ServerConfiguration.give_verified_role = False
                         await ServerConfiguration.save()
