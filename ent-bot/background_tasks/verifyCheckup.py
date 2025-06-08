@@ -23,8 +23,8 @@ class VerifyCheckup(commands.Cog):
         logging.info("[verify_checkup] Starting...")
         servers_to_check = await ServerConfiguration.all()
 
-        tasks = [self.process_server(server) for server in servers_to_check]
-        await asyncio.gather(*tasks)
+        server_tasks = [self.process_server(server) for server in servers_to_check]
+        await asyncio.gather(*server_tasks, return_exceptions=True)
 
         logging.info("[verify_checkup] Finished.")
 
