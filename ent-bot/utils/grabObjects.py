@@ -27,7 +27,7 @@ class GrabObjects:
 
     @staticmethod
     async def get_message(channel: disnake.TextChannel, message_id: int):
-        message = channel.fetch_message(message_id)
+        message = await channel.fetch_message(message_id)
         if message is None:
             logging.error(f"Message {message_id} not found in channel {channel.id}.")
         return message
