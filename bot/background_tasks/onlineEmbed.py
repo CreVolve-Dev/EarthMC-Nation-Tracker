@@ -4,6 +4,8 @@ import asyncio
 import datetime
 import logging
 
+from aiolimiter import AsyncLimiter
+
 from models.nationData import Nation
 from models.serverConfiguration import ServerConfiguration
 from utils.grabObjects import GrabObjects
@@ -14,14 +16,14 @@ logging.basicConfig(level=logging.INFO)
 class OnlineEmbed(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_semaphore = asyncio.Semaphore(10)  # Limit concurrent API calls to 10
+        self.rate_limit = AsyncLimiter(50)  # Limit concurrent API calls to 10
         self.online_embed.start()
 
     def cog_unload(self):
         self.online_embed.cancel()
 
     async def grab_api_with_throttle(self, endpoint, data):
-        async with self.api_semaphore:
+        async with self.rate_limit:
             return await GrabAPI.post_async(endpoint, data)
 
     async def create_online_embed(self, target):
