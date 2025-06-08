@@ -9,7 +9,7 @@ import utils.checkNation as checkNation
 from models.serverConfiguration import ServerConfiguration
 from models.nationData import Nation, Town, Citizen
 
-from bot.models.nationData import Town
+from models.nationData import Town
 
 notif_types = commands.option_enum({"Citizens": "citizens", "Towns": "towns", "All": "all"})
 

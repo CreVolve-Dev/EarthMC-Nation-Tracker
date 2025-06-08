@@ -61,13 +61,13 @@ class Verify(commands.Cog):
             await ServerConfiguration.create(server_name=inter.guild.name, server_id=inter.guild.id, verified_citizens=[possible_upload_data])
         else:
             for entry in server_data.verified_citizens:
-                if member == entry["discord"]:
+                if member.id == entry["discord"]:
                     return await inter.response.send_message(f"You have already verified the Discord user: **{member.mention}**")
                 if minecraft_username == entry["minecraft"]:
                     return await inter.response.send_message(f"You have already verified the Minecraft user: **{minecraft_username}**")
 
             if server_data.online_verify_check:
-                player_data = await GrabAPI.post_async('players', minecraft_username)
+                player_data = await GrabAPI.post_async('players', minecraft_username.lower())
                 if not player_data:
                     return await inter.response.send_message(f"**{minecraft_username}** is not a real player")
                 if player_data[0]["nation"]["name"] == server_data.default_nation:

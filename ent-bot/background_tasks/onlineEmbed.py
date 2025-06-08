@@ -35,7 +35,7 @@ class OnlineEmbed(commands.Cog):
             return None
 
         player_tasks = [
-            await self.grab_api_with_throttle('players', resident["name"])
+            self.grab_api_with_throttle('players', resident["name"])
             for resident in api_nation_data[0]["residents"]
         ]
         player_results = await asyncio.gather(*player_tasks, return_exceptions=True)
@@ -45,8 +45,14 @@ class OnlineEmbed(commands.Cog):
                 logging.error(f"Error fetching player data: {player_data}")
                 continue
 
-            if player_data[0]["status"]["isOnline"]:
-                online_players.append(player_data[0]["name"])
+            if not isinstance(player_data, list) or not player_data:
+                logging.error(f"Unexpected player data format: {player_data}")
+                continue
+
+            player = player_data[0]
+
+            if player.get("status", {}).get("isOnline"):
+                online_players.append(player.get("name", "Unknown"))
 
         embed_var = disnake.Embed(
             title=f"Online Players in {target} | 👥",
