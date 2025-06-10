@@ -32,7 +32,7 @@ class VerifyCheckup(commands.Cog):
         if not server.verified_checkup:
             return
         object_grabber = GrabObjects(self.bot)
-        server_object = await object_grabber.get_guild(self, server.server_id)
+        server_object = await object_grabber.get_guild(server.server_id)
         if server_object is None:
             return
         try:
