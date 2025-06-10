@@ -91,7 +91,7 @@ class Verify(commands.Cog):
                 pass
 
             if server_data.nickname_verified:
-                server_object = object_grabber.get_guild(inter.guild.id)
+                server_object = await object_grabber.get_guild(inter.guild.id)
                 member_to_update = server_object.get_member(member.id)
                 await nickname_verified(member_to_update, minecraft_username)
 
