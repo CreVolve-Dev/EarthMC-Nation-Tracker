@@ -92,7 +92,7 @@ class Verify(commands.Cog):
 
             if server_data.nickname_verified:
                 server_object = await object_grabber.get_guild(inter.guild.id)
-                member_to_update = await server_object.get_member(member.id)
+                member_to_update = await server_object.fetch_member(member.id)
                 await nickname_verified(member_to_update, minecraft_username)
 
         await inter.response.send_message(f"Verified **{member.mention}** with link to **{minecraft_username}**")
