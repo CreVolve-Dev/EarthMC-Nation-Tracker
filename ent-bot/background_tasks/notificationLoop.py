@@ -28,7 +28,7 @@ class NotificationLoop(commands.Cog):
             return await GrabAPI.post_async(endpoint, data)
 
     async def process_server(self, server, gained, lost, check, nation):
-        object_grabber = GrabObjects(self)
+        object_grabber = GrabObjects(self.bot)
         server_object = await object_grabber.get_guild(self, server)
         server_config_object = await ServerConfiguration.get(server_id=server)
 

@@ -31,7 +31,7 @@ class VerifyCheckup(commands.Cog):
     async def process_server(self, server):
         if not server.verified_checkup:
             return
-        object_grabber = GrabObjects(self)
+        object_grabber = GrabObjects(self.bot)
         server_object = await object_grabber.get_guild(self, server.server_id)
         if server_object is None:
             return

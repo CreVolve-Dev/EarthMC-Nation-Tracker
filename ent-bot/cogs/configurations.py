@@ -42,7 +42,7 @@ class Configurations(commands.Cog):
     @configure.sub_command(name="settings", description="See your server's configuration settings")
     @commands.has_guild_permissions(manage_guild=True)
     async def settings(self, inter : disnake.GuildCommandInteraction):
-        object_grabber = GrabObjects(self)
+        object_grabber = GrabObjects(self.bot)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
         guild_object = await object_grabber.get_guild(self, inter.guild.id)
 

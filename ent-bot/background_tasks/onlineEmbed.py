@@ -114,7 +114,7 @@ class OnlineEmbed(commands.Cog):
                 continue
 
             try:
-                object_grabber = GrabObjects(self)
+                object_grabber = GrabObjects(self.bot)
                 channel = await object_grabber.get_channel(self, channel_id)
                 message = await object_grabber.get_message(channel, message_id)
 

@@ -54,7 +54,7 @@ class Verify(commands.Cog):
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
     @commands.has_guild_permissions(moderate_members=True)
     async def add(self, inter : disnake.GuildCommandInteraction, member: disnake.User, minecraft_username : str):
-        object_grabber = GrabObjects(bot=self)
+        object_grabber = GrabObjects(bot=self.bot)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
 
         possible_upload_data = {"discord": member.id, "minecraft": minecraft_username}
@@ -92,7 +92,7 @@ class Verify(commands.Cog):
 
             if server_data.nickname_verified:
                 server_object = await object_grabber.get_guild(inter.guild.id)
-                member_to_update = server_object.get_member(member.id)
+                member_to_update = await server_object.get_member(member.id)
                 await nickname_verified(member_to_update, minecraft_username)
 
         await inter.response.send_message(f"Verified **{member.mention}** with link to **{minecraft_username}**")
