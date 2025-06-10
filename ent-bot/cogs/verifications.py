@@ -54,6 +54,7 @@ class Verify(commands.Cog):
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
     @commands.has_guild_permissions(moderate_members=True)
     async def add(self, inter : disnake.GuildCommandInteraction, member: disnake.User, minecraft_username : str):
+        object_grabber = GrabObjects(bot=self.bot)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
 
         possible_upload_data = {"discord": member.id, "minecraft": minecraft_username}
@@ -67,7 +68,7 @@ class Verify(commands.Cog):
                     return await inter.response.send_message(f"You have already verified the Minecraft user: **{minecraft_username}**")
 
             if server_data.online_verify_check:
-                player_data = await GrabAPI.post_async('players', minecraft_username.lower())
+                player_data = await GrabAPI.post_async('players', str(minecraft_username.lower()))
                 if not player_data:
                     return await inter.response.send_message(f"**{minecraft_username}** is not a real player")
                 if player_data[0]["nation"]["name"] == server_data.default_nation:
@@ -81,16 +82,16 @@ class Verify(commands.Cog):
 
             try:
                 if server_data.give_verified_role:
-                    if not await giveRole.give_role(member, inter, server_data.citizen_role):
-                        ServerConfiguration.citizen_role = None
-                        ServerConfiguration.give_verified_role = False
-                        await ServerConfiguration.save()
+                    if not await giveRole.give_role(member.id, inter, server_data.citizen_role):
+                        server_data.citizen_role = None
+                        server_data.give_verified_role = False
+                        await server_data.save()
                         return await inter.response.send_message(f"Verified **{member.mention}** with link to **{minecraft_username}** but couldn't find the Citizen Role to add.")
             except KeyError:
                 pass
 
             if server_data.nickname_verified:
-                server_object = GrabObjects.get_server_object(inter.guild.id)
+                server_object = object_grabber.get_guild(inter.guild.id)
                 member_to_update = server_object.get_member(member.id)
                 await nickname_verified(member_to_update, minecraft_username)
 
