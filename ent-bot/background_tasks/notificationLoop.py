@@ -28,7 +28,8 @@ class NotificationLoop(commands.Cog):
             return await GrabAPI.post_async(endpoint, data)
 
     async def process_server(self, server, gained, lost, check, nation):
-        server_object = await GrabObjects.get_guild(self, server)
+        object_grabber = GrabObjects(self)
+        server_object = await object_grabber.get_guild(self, server)
         server_config_object = await ServerConfiguration.get(server_id=server)
 
         if server_object is None:
@@ -37,7 +38,7 @@ class NotificationLoop(commands.Cog):
         channel_check = server_config_object.player_updates_channel if check == "residents" else server_config_object.town_updates_channel
         status_check = server_object.player_updates_status if check == "residents" else server_object.town_updates_status
 
-        send_channel = await GrabObjects.get_channel(self, channel_check) if channel_check is not None else None
+        send_channel = await object_grabber.get_channel(self, channel_check) if channel_check is not None else None
 
         if status_check:
             if send_channel is not None:

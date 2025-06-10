@@ -3,7 +3,7 @@ from disnake.ext import commands
 
 import utils.giveRole as giveRole
 from utils.grabAPI import GrabAPI
-import utils.grabObjects as GrabObjects
+from utils.grabObjects import GrabObjects
 
 from models.serverConfiguration import ServerConfiguration
 
@@ -54,7 +54,7 @@ class Verify(commands.Cog):
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
     @commands.has_guild_permissions(moderate_members=True)
     async def add(self, inter : disnake.GuildCommandInteraction, member: disnake.User, minecraft_username : str):
-        object_grabber = GrabObjects(bot=self.bot)
+        object_grabber = GrabObjects(bot=self)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
 
         possible_upload_data = {"discord": member.id, "minecraft": minecraft_username}
