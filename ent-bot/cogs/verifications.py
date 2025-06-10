@@ -105,8 +105,8 @@ class Verify(commands.Cog):
             return await inter.response.send_message(f"**{member.mention}** was not verified")
         for citizen in server_data.verified_citizens:
             if citizen["discord"] == member.id:
-                ServerConfiguration.verified_citizens.remove(citizen)
-                await ServerConfiguration.save()
+                server_data.verified_citizens.remove(citizen)
+                await server_data.save()
                 return await inter.response.send_message(f"Removed **{member.mention}** from verification")
 
         await inter.response.send_message(f"**{member.mention}** was not verified")
