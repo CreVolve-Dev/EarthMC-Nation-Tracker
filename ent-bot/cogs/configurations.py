@@ -44,21 +44,21 @@ class Configurations(commands.Cog):
     async def settings(self, inter : disnake.GuildCommandInteraction):
         object_grabber = GrabObjects(self.bot)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
-        guild_object = await object_grabber.get_guild(self, inter.guild.id)
+        guild_object = await object_grabber.get_guild(inter.guild.id)
 
         # Notifications
         player_notification_status = status_string(server_data.player_updates_status)
-        player_notification_channel = mention_or_none(await object_grabber.get_channel(self, server_data.player_updates_channel))
+        player_notification_channel = mention_or_none(await object_grabber.get_channel(server_data.player_updates_channel))
         town_notification_status = status_string(server_data.town_updates_status)
-        town_notification_channel = mention_or_none(await object_grabber.get_channel(self, server_data.town_updates_channel))
+        town_notification_channel = mention_or_none(await object_grabber.get_channel(server_data.town_updates_channel))
 
         # Roles
         citizen_role = mention_or_none(await object_grabber.get_role(guild_object, server_data.citizen_role))
         foreign_role = mention_or_none(await object_grabber.get_role(guild_object, server_data.foreigner_role))
 
         # Online Embed
-        embed_active = status_string(await object_grabber.get_channel(self, server_data.online_embed_channel))
-        embed_channel = mention_or_none(await object_grabber.get_channel(self, server_data.online_embed_channel))
+        embed_active = status_string(await object_grabber.get_channel(server_data.online_embed_channel))
+        embed_channel = mention_or_none(await object_grabber.get_channel(server_data.online_embed_channel))
 
         # Verifications
         verified_checkup = status_string(server_data.verified_checkup)
