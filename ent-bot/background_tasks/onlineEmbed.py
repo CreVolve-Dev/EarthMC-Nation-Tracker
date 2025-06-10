@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 class OnlineEmbed(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.rate_limit = AsyncLimiter(50)  # Limit concurrent API calls to 10
+        self.rate_limit = AsyncLimiter(100)  # Limit concurrent API calls to 10
         self.online_embed.start()
 
     def cog_unload(self):
@@ -115,8 +115,15 @@ class OnlineEmbed(commands.Cog):
 
             try:
                 object_grabber = GrabObjects(self.bot)
-                channel = await object_grabber.get_channel(channel_id)
+                server_object = await object_grabber.get_guild(audience)
+                if server_object is None:
+                    pass
+                channel = await server_object.fetch_channel(channel_id)
+                if channel is None:
+                    pass
                 message = await object_grabber.get_message(channel, message_id)
+                if message is None:
+                    pass
 
                 if message:
                     await message.edit(content="", embed=embed_var)

@@ -44,6 +44,7 @@ class Configurations(commands.Cog):
     async def settings(self, inter : disnake.GuildCommandInteraction):
         object_grabber = GrabObjects(self.bot)
         server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+        print(f"Server Data: {server_data.player_updates_tracking}")
         guild_object = await object_grabber.get_guild(inter.guild.id)
 
         # Notifications
@@ -68,16 +69,14 @@ class Configurations(commands.Cog):
 
         # Tracked Nations
         tracked_player_nations = server_data.player_updates_tracking
-        if not isinstance(tracked_player_nations, list):
-            tracked_player_nations = []
+        print(f"Tracked Nations: {tracked_player_nations}")
         tracked_player_nations_str = (
             f"```{"\n".join(f"- {nation}" for nation in tracked_player_nations)}```"
             if tracked_player_nations else "```None```"
         )
 
         tracked_town_nations = server_data.town_updates_tracking
-        if not isinstance(tracked_town_nations, list):
-            tracked_town_nations = []
+        print(f"Tracked Towns: {tracked_town_nations}")
         tracked_town_nations_str = (
             f"```{"\n".join(f"- {nation}" for nation in tracked_town_nations)}```"
             if tracked_town_nations else "```None```"

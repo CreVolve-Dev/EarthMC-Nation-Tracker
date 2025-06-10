@@ -56,19 +56,24 @@ class Notifications(commands.Cog):
             if not config or not config.default_nation:
                 return await inter.response.send_message("Provide a nation name or set your default nation with /configure nation")
             target = config.default_nation
-
         if not await checkNation.check_nation(target):
             return await inter.response.send_message(f"**{target}** is not a real nation")
-
-        nation_data = await Nation.get_or_none(name=target.lower())
+        nation_data = await Nation.get_or_none(name=target)
         server_configuration, created = await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id)
         if not nation_data:
             nation_api = await GrabAPI.post_async('nations', target)
             nation_data = await Nation.create(name=target.lower(), player_updates_audience=[inter.guild.id] if types in ("all", "citizens") else [], town_updates_audience=[inter.guild.id] if types in ("all", "towns") else [])
             if types in ("all", "citizens"):
-                server_configuration.player_updates_tracking.append(target)
+                if target not in server_configuration.player_updates_tracking:
+                    server_configuration.player_updates_tracking.append(target)
+                else:
+                    return await inter.response.send_message(f"**{target}** is already being tracked")
             if types in ("all", "towns"):
-                server_configuration.town_updates_tracking.append(target)
+                if target not in server_configuration.town_updates_tracking:
+                    server_configuration.town_updates_tracking.append(target)
+                else:
+                    return await inter.response.send_message(f"**{target}** is already being tracked")
+            print(f"Guild {inter.guild.id} has added {target} to their notifications")
             await server_configuration.save()
             await inter.response.send_message(f"Added **{target}** to **{types}** notifications")
             for resident in nation_api[0]["residents"]:
@@ -77,11 +82,27 @@ class Notifications(commands.Cog):
                 await Town.update_or_create(name=town["name"], nation=nation_data)
             return
         else:
+            updated = False
+
             if types in ("all", "citizens") and inter.guild.id not in nation_data.player_updates_audience:
-                nation_data.player_updates_audience.append(inter.guild.id)
+                if target not in server_configuration.player_updates_tracking:
+                    server_configuration.player_updates_tracking.append(target)
+                    nation_data.player_updates_audience.append(inter.guild.id)  # Add this line
+                    updated = True
+                else:
+                    return await inter.response.send_message(f"**{target}** is already being tracked")
+
             if types in ("all", "towns") and inter.guild.id not in nation_data.town_updates_audience:
-                nation_data.town_updates_audience.append(inter.guild.id)
-            await nation_data.save()
+                if target not in server_configuration.town_updates_tracking:
+                    server_configuration.town_updates_tracking.append(target)
+                    nation_data.town_updates_audience.append(inter.guild.id)  # Add this line
+                    updated = True
+                else:
+                    return await inter.response.send_message(f"**{target}** is already being tracked")
+
+            if updated:
+                await nation_data.save()
+                await server_configuration.save()
 
         return await inter.response.send_message(f"Added **{target}** to **{types}** notifications")
 
