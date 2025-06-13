@@ -28,18 +28,20 @@ class Embeds(commands.Cog):
 
         nations = await Nation.all()
         for nation in nations:
+            if not nation.embed_audience:
+                continue
             if inter.guild.id in nation.embed_audience:
                 nation.embed_audience.remove(inter.guild.id)
                 await nation.save()
 
-        await inter.response.send_message(f"Online embed set to **{target}**. A temporary message has been made that will become the embed.", ephemeral=True)
-        set_message = await inter.followup.send("This is a placeholder until an online embed is ready...")
+        await inter.response.send_message(f"Online embed set to **{target}**. This is a temporary message that will become the embed.")
+        set_message = await inter.original_message()
 
         await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"online_embed_channel": set_message.channel.id, "online_embed_message": set_message.id})
 
-        nation_data = await Nation.get_or_none(name=target.lower())
+        nation_data = await Nation.get_or_none(name=target)
         if not nation_data:
-            await Nation.create(name=target.lower(), embed_audience=[inter.guild.id])
+            await Nation.create(name=target, embed_audience=[inter.guild.id])
         else:
             nation_data.embed_audience.append(inter.guild.id)
             await nation_data.save()
@@ -48,13 +50,13 @@ class Embeds(commands.Cog):
     @commands.has_guild_permissions(manage_guild=True)
     async def remove(self, inter : disnake.GuildCommandInteraction):
         for nation in await Nation.all():
-            if inter.guild.id == nation.embed_audience:
+            if inter.guild.id in nation.embed_audience:
                 nation.embed_audience.remove(inter.guild.id)
                 await nation.save()
                 await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"online_embed_channel": None, "online_embed_message": None})
-                await inter.response.send_message(f"Removed your online embed")
+                return await inter.response.send_message(f"Removed your online embed")
             else:
-                await inter.response.send_message(f"You don't have an online embed")
+                return await inter.response.send_message(f"You don't have an online embed")
 
 def setup(bot):
     bot.add_cog(Embeds(bot))
