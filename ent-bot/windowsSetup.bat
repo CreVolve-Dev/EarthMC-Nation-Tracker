@@ -36,11 +36,6 @@ if %ERRORLEVEL%==0 (
     npm install -g pm2 --silent
 )
 
-cd ent-bot || (
-    echo Could not change to ent-bot directory.
-    exit /b 1
-)
-
 set /p BOTTOKEN=Enter your bot's token:
 set /p MYSQL_URL=Enter your MySQL Database URL:
 
@@ -51,9 +46,8 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 call bot-venv\Scripts\deactivate.bat
-cd ..
 
-set "VENV_PATH=%cd%\ent-bot\bot-venv\Scripts\python.exe"
+set "VENV_PATH=%cd%\bot-venv\Scripts\python.exe"
 > pm2.config.js (
     echo module.exports = {
     echo   apps: [
@@ -69,8 +63,6 @@ set "VENV_PATH=%cd%\ent-bot\bot-venv\Scripts\python.exe"
     echo   ]
     echo };
 )
-
-cd ent-bot || exit /b 1
 
 > databaseConfig.json (
     echo {
