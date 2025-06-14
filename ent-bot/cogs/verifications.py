@@ -7,6 +7,9 @@ from utils.grabObjects import GrabObjects
 
 from models.serverConfiguration import ServerConfiguration
 
+configurations = commands.option_enum(["Give Verified Role", "Nickname Verified", "Online Verify Check", "Verified Checkup"])
+true_false = commands.option_enum(["True", "False"])
+
 async def nickname_verified(user : disnake.Member, minecraft_username):
     town = await GrabAPI.post_async('players', minecraft_username)
     nickname = f"{minecraft_username} | {town[0]["town"]["name"]}"
@@ -23,33 +26,26 @@ class Verify(commands.Cog):
     async def verify(self, inter : disnake.GuildCommandInteraction):
         pass
 
-    @verify.sub_command(name="give-verified-role", description="Toggle whether members get your citizen role when verified")
+    @verify.sub_command(name="configure", description="Change certain settings for verification")
     @commands.has_guild_permissions(manage_guild=True)
-    async def give_verified_role(self, inter : disnake.GuildCommandInteraction, status : bool):
-        await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"give_verified_role": status})
-        await inter.response.send_message(f"Updated give_verified_role to **{status}**")
-
-    @verify.sub_command(name="verified-checkup", description="Automatically remove people who have left the server from verifications")
-    @commands.has_guild_permissions(manage_guild=True)
-    async def verified_checkup(self, inter : disnake.GuildCommandInteraction, status : bool):
-        await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"verified_checkup": status})
-        await inter.response.send_message(f"Updated verified_checkup to **{status}**")
-
-    @verify.sub_command(name="nickname-verified", description="Toggle whether verified members get their minecraft username as their nickname")
-    @commands.has_guild_permissions(manage_guild=True)
-    async def nickname_verified(self, inter : disnake.GuildCommandInteraction, status : bool):
-        await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"nickname_verified": status})
-        await inter.response.send_message(f"Updated nickname_verified to **{status}**")
-
-    @verify.sub_command(name="online-verify-check", description="Check if a user's minecraft username is a citizen of your nation before verifying")
-    @commands.has_guild_permissions(manage_guild=True)
-    async def online_verify_check(self, inter : disnake.GuildCommandInteraction, status : bool):
-        server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
-        if server_data is not None and server_data.default_nation is not None:
-            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id, defaults={"online_verify_check": status})
-            await inter.response.send_message(f"Updated online_verify_check to **{status}**")
-        else:
-            await inter.response.send_message("You need to set a default nation first with /configure nation")
+    async def toggle(self, inter : disnake.GuildCommandInteraction, setting : configurations, status : bool):
+        if setting == "Give Verified Role":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id,defaults={"give_verified_role": status})
+            await inter.response.send_message(f"Updated give_verified_role to **{status}**")
+        elif setting == "Nickname Verified":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id,defaults={"nickname_verified": status})
+            await inter.response.send_message(f"Updated nickname_verified to **{status}**")
+        elif setting == "Online Verify Check":
+            server_data = await ServerConfiguration.get_or_none(server_name=inter.guild.name, server_id=inter.guild.id)
+            if server_data is not None and server_data.default_nation is not None:
+                await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id,
+                                                           defaults={"online_verify_check": status})
+                await inter.response.send_message(f"Updated online_verify_check to **{status}**")
+            else:
+                await inter.response.send_message("You need to set a default nation first with /configure nation")
+        elif setting == "Verified Checkup":
+            await ServerConfiguration.update_or_create(server_name=inter.guild.name, server_id=inter.guild.id,defaults={"verified_checkup": status})
+            await inter.response.send_message(f"Updated verified_checkup to **{status}**")
 
     @verify.sub_command(name="add", description="Verify a citizen of your nation")
     @commands.has_guild_permissions(moderate_members=True)
