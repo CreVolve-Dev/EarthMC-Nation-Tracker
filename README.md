@@ -38,54 +38,30 @@ Verifications:
 - /verify nickname-verified -> Automatically nicknames verified citizens in a  "Minecraft Username | Town" format
 ## Installation
 
-Install Python3, venv and pip:
-```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv -y
-```
-
 Clone the repository in your desired directory:
 ```bash
 git clone https://github.com/CreVolve-Dev/EarthMC-Nation-Tracker.git
 cd EarthMC-Nation-Tracker
 ```
 
-Edit the processSetup file to include your bot's token:
+Run the setup script for your operating system:
 ```bash
-sudo nano processSetup.js
+# Mac or Linux
+./setup.sh
+
+# Windows
+./windowsSetup.bat
 ```
 
-Go into the bot folder to add your MySQL DB url and create a new virtual environment:
+By default the bot is running on PM2 so you can use PM2 commands:
 ```bash
-cd ent-bot
-sudo nano databaseConfig.json
-python3 -m venv bot-venv
-```
+pm2 stop earthmc-nation-tracker # Stop the bot
 
-Activate the virtual environment and download the required Python libraries:
-```bash
-#Mac or Linux
-source bot-venv/bin/activate
+pm2 restart earthmc-nation-tracker # Restart the bot
 
-#Windows
-bot-venv/scripts/activate
+pm2 start earthmc-nation-tracker # Start the bot
 
-pip3 install -r requirements.txt
-```
-### Activating
-
-Install Node.js and PM2:
-```bash
-curl -L https://deb.nodesource.com/setup_18.x | bash -
-sudo apt install -y nodejs
-sudo npm install -g pm2
-```
-
-Create your PM2 config file and start the PM2 task:
-```bash
-cd ..
-node processSetup.js
-pm2 start pm2.config.js
+pm2 logs earthmc-nation-tracker # See the bot logs
 ```
 ## Contributing
 

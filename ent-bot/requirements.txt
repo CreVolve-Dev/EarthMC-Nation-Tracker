@@ -4,3 +4,6 @@ requests~=2.32.3
 aiohttp~=3.12.2
 asyncio~=3.4.3
 aiofiles~=24.1.0
+aiolimiter~=1.2.1
+aiomysql~=0.2.0
+tortoise-orm~=0.25.1

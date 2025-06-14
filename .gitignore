@@ -1,2 +1,4 @@
 *.pyc
 /.idea
+/pm2.config.js
+/ent-bot/databaseConfig.json
