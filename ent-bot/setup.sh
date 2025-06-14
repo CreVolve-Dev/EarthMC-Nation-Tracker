@@ -65,5 +65,3 @@ cat > databaseConfig.json <<EOF
   }
 }
 EOF
-
-pm2 start ./pm2.config.js

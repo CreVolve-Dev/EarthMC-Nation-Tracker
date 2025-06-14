@@ -77,5 +77,3 @@ set "VENV_PATH=%cd%\bot-venv\Scripts\python.exe"
     echo   }
     echo }
 )
-
-pm2 start .\pm2.config.js
