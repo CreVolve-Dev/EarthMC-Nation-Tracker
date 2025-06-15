@@ -8,6 +8,7 @@ import logging
 import json
 from aiofiles.os import listdir
 from aiohttp.client_exceptions import ClientError
+from databaseConfig import DATABASE_CONFIG
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,12 +22,6 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix="/", intents=intents)
-
-
-async def load_database_config():
-    async with aiofiles.open("databaseConfig.json", mode="r") as f:
-        return json.loads(await f.read())
-
 
 async def load_extensions(bot):
     for folder in ["cogs", "background_tasks"]:
@@ -82,8 +77,7 @@ async def on_slash_command_error(ctx, error):
             logger.error("Error occurred during slash command: %s", error)
 
 async def main():
-    database_config = await load_database_config()
-    await initialize_database(database_config)
+    await initialize_database(DATABASE_CONFIG)
     await load_extensions(bot)
 
 if __name__ == "__main__":

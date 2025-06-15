@@ -63,17 +63,3 @@ set "VENV_PATH=%cd%\bot-venv\Scripts\python.exe"
     echo   ]
     echo };
 )
-
-> databaseConfig.json (
-    echo {
-    echo   "connections": {
-    echo     "default": "%MYSQL_URL%"
-    echo   },
-    echo   "apps": {
-    echo     "models": {
-    echo       "models": ["models.serverConfiguration", "models.nationData"],
-    echo       "default_connection": "default"
-    echo     }
-    echo   }
-    echo }
-)

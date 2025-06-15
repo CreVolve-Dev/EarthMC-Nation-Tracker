@@ -51,17 +51,3 @@ module.exports = {
   ]
 };
 EOF
-
-cat > databaseConfig.json <<EOF
-{
-  "connections": {
-    "default": "${MYSQL_URL}"
-  },
-  "apps": {
-    "models": {
-      "models": ["models.serverConfiguration", "models.nationData"],
-      "default_connection": "default"
-    }
-  }
-}
-EOF
