@@ -36,8 +36,8 @@ if %ERRORLEVEL%==0 (
     npm install -g pm2 --silent
 )
 
-set /p BOTTOKEN=Enter your bot's token:
-set /p MYSQL_URL=Enter your MySQL Database URL:
+set /p BOT_TOKEN=Enter your bot's token:
+set /p DB_URL=Enter your MySQL Database URL:
 
 python -m venv bot-venv
 call bot-venv\Scripts\activate.bat
@@ -57,7 +57,8 @@ set "VENV_PATH=%cd%\bot-venv\Scripts\python.exe"
     echo       cwd: "./ent-bot/",
     echo       interpreter: "%VENV_PATH:\=\\%",
     echo       env: {
-    echo         BOT_TOKEN: "%BOTTOKEN%"
+    echo         BOT_TOKEN: "%BOT_TOKEN%"
+    echo         DATABASE_URL: "%DB_URL%"
     echo       }
     echo     }
     echo   ]
