@@ -26,8 +26,6 @@ else
   sudo npm install -g pm2 --silent
 fi
 
-cd ent-bot || exit 1
-
 read -rp "Enter your bot's token: " BOTTOKEN
 read -rp "Enter your MySQL Database URL: " MYSQL_URL
 
@@ -38,15 +36,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 deactivate
 
-cd .. || exit 1
-
 cat > pm2.config.js <<EOF
 module.exports = {
   apps: [
     {
       name: "earthmc-nation-tracker",
       script: "main.py",
-      cwd: "./ent-bot/",
+      cwd: "./",
       interpreter: "$(pwd)/bot-venv/bin/python3",
       env: {
         BOT_TOKEN: "${BOTTOKEN}"
@@ -55,21 +51,3 @@ module.exports = {
   ]
 };
 EOF
-
-cd ent-bot || exit 1
-
-cat > databaseConfig.json <<EOF
-{
-  "connections": {
-    "default": "${MYSQL_URL}"
-  },
-  "apps": {
-    "models": {
-      "models": ["models.serverConfiguration", "models.nationData"],
-      "default_connection": "default"
-    }
-  }
-}
-EOF
-
-pm2 start ./pm2.config.js

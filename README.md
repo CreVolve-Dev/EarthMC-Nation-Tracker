@@ -1,6 +1,9 @@
 ![Logo](https://i.imgur.com/0ih5Uv0.png)
 
 EMC Nation Tracker (ENT) is a disnake bot focused around making it easier for EarthMC players to track what happens within their nations. It aims to better integrate EarthMC with Discord by showing things such as citizens joining and leaving your nation, who is online, and keeping track of who in your Discord is verified as a citizen.
+### Invite the Bot to Your Server:
+
+Invite the bot here: https://discord.com/oauth2/authorize?client_id=1376977555546050650
 ## Features
 
 - See current relationships with other nations with /information relations  
@@ -29,15 +32,13 @@ Online Players Embeds:
 - /embed remove -> Destroy the current Online Embed making it no longer update
 
 Verifications:
-- /verify add -> Link a Discord user and a Minecraft user together on your server.
+- /verify add -> Link a Discord user and a Minecraft user together on your server
 - /verify remove -> Unlink a Discord and Minecraft user
 - /verify check -> See what Minecraft username a Discord user is linked to
-- /verify give-verified-role -> Enable/Disable automatically giving verified members your citizen role (Only will turn on if the citizen role has been set)
-- /verify verify-checkup -> Scans through your verified players and removes them if they have left the server and also gives verified members the citizen role (If citizen role has been set)
-- /verify online-verify-check -> Looks at the API to make sure the person you are verifying is actually a part of your nation (requires default nation to be set)
-- /verify nickname-verified -> Automatically nicknames verified citizens in a  "Minecraft Username | Town" format
+- /verify configure -> Turn a verification setting on/off
 ## Installation
 
+### DROPLET OR VM:
 Clone the repository in your desired directory:
 ```bash
 git clone https://github.com/CreVolve-Dev/EarthMC-Nation-Tracker.git
@@ -53,15 +54,40 @@ Run the setup script for your operating system:
 ./windowsSetup.bat
 ```
 
-By default the bot is running on PM2 so you can use PM2 commands:
+By default, the bot is running on PM2 so you can use PM2 commands:
 ```bash
+pm2 start earthmc-nation-tracker # Start the bot
+
 pm2 stop earthmc-nation-tracker # Stop the bot
 
 pm2 restart earthmc-nation-tracker # Restart the bot
 
-pm2 start earthmc-nation-tracker # Start the bot
-
 pm2 logs earthmc-nation-tracker # See the bot logs
+```
+
+### APP PLATFORM:
+Use this repository as your model to deploy and set the working directory:
+```bash
+https://github.com/CreVolve-Dev/EarthMC-Nation-Tracker.git
+/ent-bot # Working Directory
+```
+
+Set your environment variables:
+```bash
+# Get your bot's token in the Discord Application Portal
+BOT_TOKEN="BOT TOKEN HERE"
+
+# MUST be a MySQL url: mysql://username:password@cool-database-host.com:port/database-name
+DATABASE_URL="DATABASE URL HERE" 
+```
+
+Set the build and run commands:
+```bash
+# Build Command:
+./setup.sh
+
+# Run Command:
+python3 ./main.py
 ```
 ## Contributing
 
@@ -72,9 +98,9 @@ For smaller things such as bug fixes or tweaks:
 - Fork the Repo
 - Apply your changes
 - Test your changes thoroughly
-- Send a pull request
+- Send a merge request
 
-PLEASE: Test your changes before sending in pull requests. I don't want to spend hours debugging your code...
+PLEASE: Test your changes before sending in merge requests. I don't want to spend hours debugging your code...
 ## Roadmap
 
 - ~~Add a feature to verifications to automatically check the API to see whether a user is actually a member of a nation~~ - Done
