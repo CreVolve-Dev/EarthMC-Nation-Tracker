@@ -85,7 +85,10 @@ class NotificationLoop(commands.Cog):
             self.process_server(server, gained, lost, check, api_nation_data[0]["name"])
             for server in audience_list
         ]
-        await asyncio.gather(*server_tasks, return_exceptions=True)
+        results = await asyncio.gather(*server_tasks, return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"[process_server] Exception: {result}")
 
         if check == "residents":
             await Citizen.bulk_create([Citizen(name=thing, nation=nation) for thing in gained])
