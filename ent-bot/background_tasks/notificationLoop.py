@@ -42,7 +42,7 @@ class NotificationLoop(commands.Cog):
 
         channel_check = server_config_object.player_updates_channel if check == "residents" else server_config_object.town_updates_channel
         print(f"{check} Channel: {channel_check}")
-        status_check = server_object.player_updates_status if check == "residents" else server_object.town_updates_status
+        status_check = server_config_object.player_updates_status if check == "residents" else server_config_object.town_updates_status
         print(f"{check} Status: {status_check}")
 
         print(f"{server} has their status at {status_check}")
