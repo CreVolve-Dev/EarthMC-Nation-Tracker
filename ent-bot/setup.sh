@@ -26,8 +26,8 @@ else
   sudo npm install -g pm2 --silent
 fi
 
-read -rp "Enter your bot's token: " BOTTOKEN
-read -rp "Enter your MySQL Database URL: " MYSQL_URL
+read -rp "Enter your bot's token: " BOT_TOKEN
+read -rp "Enter your MySQL Database URL: " DB_URL
 
 python3 -m venv bot-venv
 source bot-venv/bin/activate
@@ -45,7 +45,8 @@ module.exports = {
       cwd: "./",
       interpreter: "$(pwd)/bot-venv/bin/python3",
       env: {
-        BOT_TOKEN: "${BOTTOKEN}"
+        BOT_TOKEN: "${BOT_TOKEN}"
+        DATABASE_URL: "${DB_URL}"
       }
     }
   ]

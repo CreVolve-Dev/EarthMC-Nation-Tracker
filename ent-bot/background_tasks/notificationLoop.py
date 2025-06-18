@@ -33,17 +33,22 @@ class NotificationLoop(commands.Cog):
     async def process_server(self, server, gained, lost, check, nation):
         object_grabber = GrabObjects(self.bot)
         server_object = await object_grabber.get_guild(server)
+        print(f"Server: {server_object.name}")
         server_config_object = await ServerConfiguration.get(server_id=server)
+        print(f"Server Configuration: {server_config_object}")
 
         if server_object is None:
             return
 
         channel_check = server_config_object.player_updates_channel if check == "residents" else server_config_object.town_updates_channel
-        status_check = server_object.player_updates_status if check == "residents" else server_object.town_updates_status
+        print(f"{check} Channel: {channel_check}")
+        status_check = server_config_object.player_updates_status if check == "residents" else server_config_object.town_updates_status
+        print(f"{check} Status: {status_check}")
 
         print(f"{server} has their status at {status_check}")
 
         send_channel = await object_grabber.get_channel(channel_check) if channel_check is not None else None
+        print(f"Send channel: {send_channel}")
 
         if status_check:
             if send_channel is not None:
@@ -61,12 +66,17 @@ class NotificationLoop(commands.Cog):
     async def process_nation(self, nation, check):
         api_nation_data = await self.grab_api_with_throttle('nations', nation.name)
 
-        api_data = list(resident["name"] for resident in api_nation_data[0]["residents"]) if check == "residents" else list(town["name"] for town in api_nation_data[0]["towns"])
-        db_data = list(citizen.name for citizen in await Citizen.filter(nation=nation.name)) if check == "residents" else list(town.name for town in await Town.filter(nation=nation.name))
+        api_data = sorted(list(resident["name"] for resident in api_nation_data[0]["residents"]) if check == "residents" else list(town["name"] for town in api_nation_data[0]["towns"]))
+        print(f"{nation.name} {check} API_DATA: {api_data}")
+        db_data = sorted(list(citizen.name for citizen in await Citizen.filter(nation=nation.name)) if check == "residents" else list(town.name for town in await Town.filter(nation=nation.name)))
+        print(f"{nation.name} {check} DB_DATA: {db_data}")
         gained = [item for item in api_data if item not in db_data]
+        print(f"{nation.name} {check} GAINED: {gained}")
         lost = [item for item in db_data if item not in api_data]
+        print(f"{nation.name} {check} LOST: {lost}")
 
         audience_list = nation.player_updates_audience if check == "residents" else nation.town_updates_audience
+        print(f"Audience List for {nation.name}: {audience_list}")
 
         if not gained and not lost:
             return
@@ -75,7 +85,10 @@ class NotificationLoop(commands.Cog):
             self.process_server(server, gained, lost, check, api_nation_data[0]["name"])
             for server in audience_list
         ]
-        await asyncio.gather(*server_tasks, return_exceptions=True)
+        results = await asyncio.gather(*server_tasks, return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"[process_server] Exception: {result}")
 
         if check == "residents":
             await Citizen.bulk_create([Citizen(name=thing, nation=nation) for thing in gained])
