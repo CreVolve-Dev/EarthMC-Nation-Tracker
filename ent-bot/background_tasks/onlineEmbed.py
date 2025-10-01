@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 class OnlineEmbed(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.rate_limit = AsyncLimiter(100)  # Limit concurrent API calls to 10
+        self.rate_limit = AsyncLimiter(10, 1)  # Limit concurrent API calls to 10
         self.object_grabber = GrabObjects(bot)
         self.online_embed.start()
 
@@ -31,7 +31,16 @@ class OnlineEmbed(commands.Cog):
         online_players = []
 
         api_nation_data = await self.grab_api_with_throttle('nations', target)
-        if not api_nation_data or "residents" not in api_nation_data[0]:
+
+        if not api_nation_data:
+            logging.warning(f"No API data returned for nation: {target.name}")
+            return
+
+        if not isinstance(api_nation_data, list) or len(api_nation_data) == 0:
+            logging.warning(f"Invalid API response format for nation: {target.name}")
+            return
+
+        if "residents" not in api_nation_data[0]:
             logging.error(f"Failed to fetch nation data for: {target}")
             return None
 
