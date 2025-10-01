@@ -8,3 +8,4 @@ aiolimiter~=1.2.1
 aiomysql~=0.2.0
 tortoise-orm~=0.25.1
 disnake-pagination~=2.1
+asyncpg~=0.30.0
